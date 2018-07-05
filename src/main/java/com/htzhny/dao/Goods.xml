@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.htzhny.dao.GoodsDao">
+	<resultMap id="GoodsQuery" type="com.htzhny.entity.Goods">
+		<id column="id" property="id"/>
+		<result column="goods_name" property="goods_name"/>
+		<result column="goods_low_price" property="goods_low_price"/>
+		<result column="goods_high_price" property="goods_high_price"/>
+		<result column="goods_type" property="goods_type"/>
+		<result column="goods_detail" property="goods_detail"/>
+		<result column="goods_status" property="goods_status"/>
+		<result column="goods_Recommended" property="goods_Recommended"/>
+		<result column="goods_introduce" property="goods_introduce"/>
+		<result column="base_id" property="base_id"/>
+		<result column="goods_resource_id" property="goods_resource_id"/>
+		<result column="goods_create_time" property="goods_create_time"/>
+		<result column="goods_quality_report_id" property="goods_quality_report_id"/>
+		<result column="goods_img" property="goods_img"/>
+	</resultMap>
+	<insert id="addGoods" parameterType="com.htzhny.entity.Goods">
+		insert into goods(id,goods_name,goods_low_price,goods_high_price,goods_type,goods_detail,goods_status,goods_Recommended, goods_create_time,goods_img)
+		values(#{id},#{goods_name},#{goods_low_price},#{goods_high_price},#{goods_type},#{goods_detail},#{goods_status},#{goods_Recommended},#{goods_create_time},#{goods_img})
+	</insert>
+	<update id="updateGoods" parameterType="com.htzhny.entity.Goods">
+		update goods set goods_name=#{goods_name},goods_low_price=#{goods_low_price},goods_high_price=#{goods_high_price},goods_type=#{goods_type},
+		goods_detail=#{goods_detail},goods_status=#{goods_status},goods_Recommended=#{goods_Recommended},goods_create_time=#{goods_create_time},goods_img=#{goods_img} where id=#{id}
+	</update>
+	<select id="selectGoodsById" parameterType="java.lang.Integer"  resultMap="GoodsQuery">
+		select * from goods where id=#{id}
+	</select>
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1) from goods
+	</select>
+	<select id="selectCountByType" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		select count(1) from goods where goods_type=#{typeId}
+	</select>
+	<select id="selectGoodsByType" resultMap="GoodsQuery">
+		select * from goods where goods_type=#{2} limit #{0},#{1}
+	</select>
+	<select id="selectAllGoods" resultMap="GoodsQuery">
+		select * from goods limit #{0},#{1}
+	</select>
+	<select id="selectRecommendedGoods" parameterType="java.lang.Integer" resultMap="GoodsQuery">
+		select * from goods where goods_Recommended=1
+	</select>
+	<update id="updateGoodsRecommendedstatus" >
+		update goods set goods_Recommended=#{1} where id=#{0}
+	</update>
+	<select id="selectAll" resultMap="GoodsQuery">
+		select * from goods
+	</select>
+	
+	<select id="selectGoodsStatus" parameterType="java.lang.Integer" resultMap="GoodsQuery">
+		select * from goods where goods_status=#{goods_status}
+	</select>
+	<update id="updateGoodsStatus" >
+		update goods set goods_status=#{0} where id=#{1}
+	</update>
+	<select id="selectGoodsByName" resultMap="GoodsQuery">
+		select * from goods where goods_name like "%"#{2}"%" order by id limit #{0},#{1}
+	</select>
+	<select id="selectCountByGoodsName" resultType="java.lang.Integer" parameterType="String">
+		select count(1) from goods where goods_name like "%"#{0}"%"
+		
+	</select> 
+</mapper>

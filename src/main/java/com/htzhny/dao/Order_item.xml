@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.htzhny.dao.Order_itemDao">
+	<resultMap id="Order_itemQuery" type="com.htzhny.entity.Order_itemQuery">
+		<id column="id" property="id"/>
+		<result column="goods_id" property="goods_id"/>
+		<result column="goods_name" property="goods_name"/>
+		<result column="order_id" property="order_id"/>
+		<result column="goods_amount" property="goods_amount"/>
+		<result column="goods_low_price" property="goods_low_price"/>
+		<result column="goods_high_price" property="goods_high_price"/>
+		<result column="goods_real_price" property="goods_real_price"/>
+		<result column="is_after_sale" property="is_after_sale"/>
+		<result column="goods_img" property="goods_img"/>
+	</resultMap>
+	<insert id="addOrder_item" parameterType="com.htzhny.entity.Order_item">
+		insert into order_item(id,goods_id,order_id,goods_amount,is_after_sale) 
+		values(#{id},#{goods_id},#{order_id},#{goods_amount},0)
+	</insert>
+		<insert id="addCompleteOrderItem" parameterType="com.htzhny.entity.Order_item">
+		insert into order_item(id,goods_id,order_id,goods_amount,goods_real_price,is_after_sale) 
+		values(#{id},#{goods_id},#{order_id},#{goods_amount},#{goods_real_price},#{is_after_sale})
+	</insert>
+	<update id="updateRealPrice" parameterType="com.htzhny.entity.Order_item">
+		update order_item set goods_real_price=#{goods_real_price} where id=#{id}
+	</update>
+	<select id="selectCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(1) from order_item where order_id=#{order_id}
+	</select>
+	<select id="selectAllByOrderId" resultMap="Order_itemQuery">
+		select a.id,b.goods_img,a.goods_id,b.goods_name,a.order_id,a.goods_amount,a.is_after_sale,b.goods_low_price,b.goods_high_price,a.goods_real_price from order_item a inner join goods b on a.goods_id=b.id where order_id=#{2} limit #{0},#{1}
+	</select>
+	<select id="selectAllItem" parameterType="java.lang.String" resultType="com.htzhny.entity.Order_item">
+		select * from order_item where order_id=#{order_id}
+	</select>
+	<delete id="deleteOrderItem" parameterType="java.lang.String">
+		delete from order_item where id=#{id}
+	</delete>
+	<update id="updateAfterSale">
+		update order_item set is_after_sale=#{0} where id=#{1}
+	</update>
+</mapper>

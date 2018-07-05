@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit"> 
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/jquery.cookie.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+var obj = sessionStorage.getItem("user");
+var user = JSON.parse(obj);	
+	$(document).ready(function(c) {
+			//初始化方法
+		<!-- 用户对象 -->
+		//获取登录用户信息
+		//var user = JSON.parse(sessionStorage.getItem('user'));
+	//	$("#img").html(user.img);	//给用户资料赋值
+	//	$("#name").val(user.user_name);
+	//	$("#birthday").val(user.user_birthday);
+	//	$("#userCompany").val(user.user_company);
+	//	$("#userPhone").val(user.user_phone);
+	//	var showchar = document.getElementById("userInfo").style.display ="block";
+		
+	});
+	function openUserInfo(obj){//页面刷新
+		if(obj.value==0){
+			return;
+		}else if(obj.value==1){//查看个人资料
+			window.location.href="userInfo.html";
+		}else{//修改个人资料
+			window.location.href="editUserInfo.html";
+		}
+	}
+	function openAccount(obj){
+		if(obj.value==0){
+			return;
+		}else if(obj.value==1){//修改密码
+			window.location.href="editPassword.html";
+		}else{//忘记密码
+			window.location.href="forgetPassword.html";
+		}
+	}
+	function openAddress(obj){
+		if(obj.value==0){
+			return;
+		}else if(obj.value==1){//查看收货地址
+			window.location.href="myAddress.html";
+		}else{//修改默认收货地址
+			window.location.href="editAddress.html";
+		}
+	}
+	function openOrder(obj){
+		if(obj.value==0){
+			return;
+		}else if(obj.value==1){//查看待报价订单
+			sessionStorage.setItem("orderStatus","1");
+			window.location.href="userOrderList.html";
+		}else if(obj.value==2){//查看待收货订单
+			sessionStorage.setItem("orderStatus","2");
+			window.location.href="userOrderList.html";
+		}else if(obj.value==3){//查看已完成订单
+			sessionStorage.setItem("orderStatus","3");
+			window.location.href="userOrderList.html";
+		}else{//查看售后处理订单
+			sessionStorage.setItem("orderStatus","4");
+			window.location.href="userOrderList.html";
+		}
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+  	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">用户中心</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./myBasket.html" style="color:#FFFFFF;font-size:25px;">我的菜篮</a></li>
+		    	</ul>
+		    </div>
+  		</td>
+  		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  		<tr><td colspan="3">
+	    	<ul >
+	    		<li style="float:left;padding:0.05em;"><select onchange="openUserInfo(this)"><option value="0">个人资料</option><option value="1" onclick="">查看个人资料</option><option value="2">修改个人资料</option></select></li>
+	    		<li style="float:left;padding:0.05em;"><select onchange="openAccount(this)"><option value="0">账户中心</option><option value="1">修改密码</option><option value="2">找回密码</option></select></li>
+	    		<li style="float:left;padding:0.05em;"><select onchange="openAddress(this)"><option value="0">我的收获地址</option><option value="1">查看收货地址</option><option value="2">修改收货地址</option></select></li>
+	    		<li style="float:left;padding:0.05em;"><select onchange="openOrder(this)"><option value="0">我的订单</option><option value="1">待报价订单</option><option value="2">待收货订单</option><option value="3">已完成订单</option><option value="4">售后处理订单</option></select></li>
+	    	</ul>
+  		</td></tr>
+  	</table> 
+  	
+  </div>
+ </form>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

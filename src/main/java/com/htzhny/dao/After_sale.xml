@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.htzhny.dao.After_saleDao">
+	<resultMap id="After_saleQuery" type="com.htzhny.entity.After_saleQuery">
+		<result column="after_sale_id" property="after_sale_id"/>
+		<result column="after_sale_reason" property="after_sale_reason"/>
+		<result column="handle_status" property="handle_status"/>
+		<result column="user_name" property="user_name"/>
+		<result column="delivery_time" property="delivery_time"/>
+		<result column="a_order_id" property="a_order_id"/>
+		</resultMap>
+		<resultMap type="com.htzhny.entity.Order_itemAndAfter_saleQuery" id="Order_itemAndAfter_saleQuery">
+		<result column="after_sale_id" property="after_sale_id"/>
+		<result column="goods_name" property="goods_name"/>
+		<result column="goods_amount" property="goods_amount"/>
+		<result column="goods_low_price" property="goods_low_price"/>
+		<result column="goods_high_price" property="goods_high_price"/>
+		<result column="goods_real_price" property="goods_real_price"/>
+		<result column="handle_way" property="handle_way"/>
+		<result column="handle_person" property="handle_person"/>
+		<result column="handle_time" property="handle_time"/>
+		<result column="prove_img" property="prove_img"/>
+		<result column="after_sale_reason" property="after_sale_reason"/>
+		<result column="handle_status" property="handle_status"/>
+		<result column="user_company" property="company"/>
+		<result column="delivery_time" property="delivery_time"/>
+		<result column="goods_img" property="goods_img"/>
+		</resultMap>
+	<select id="selectOneById"  resultMap="Order_itemAndAfter_saleQuery">
+		select a.after_sale_id,d.goods_name,c.goods_amount,c.order_id,d.goods_low_price,d.goods_high_price, c.goods_real_price,a.handle_way
+		,a.handle_person,a.handle_time,a.prove_img,a.after_sale_reason,a.handle_status,b.user_company,f.delivery_time,d.goods_img from after_sale a join user b on a.user_id=b.id join order_item c on a.a_order_id=c.order_id join goods d on c.goods_id=d.id join t_order f on c.order_id=f.id where order_id=#{2} limit #{0},#{1}
+	</select>
+	<insert id="addAfter_sale" parameterType="com.htzhny.entity.After_sale">
+		insert into after_sale(after_sale_id,user_id,a_order_id,after_sale_reason,handle_status,handle_way,handle_person,handle_time,prove_img) 
+		values(#{after_sale_id},#{user_id},#{a_order_id},#{after_sale_reason},#{handle_status},#{handle_way},#{handle_person},#{handle_time},#{prove_img})
+	</insert>
+	<update id="updateAfter_sale" parameterType="com.htzhny.entity.After_sale">
+		update after_sale set handle_status=#{handle_status},handle_way=#{handle_way},handle_person=#{handle_person} where after_sale_id=#{after_sale_id}
+	</update>
+	<select id="selectCountByUser" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		select count(1) from after_sale where user_id=#{user_id}
+	</select>
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1) from after_sale
+	</select>
+	<select id="selectAllRecord" parameterType="java.lang.Integer" resultType="After_saleQuery">
+		select after_sale.after_sale_id,after_sale.a_order_id,user.user_name,t_order.delivery_time,after_sale.after_sale_reason,after_sale.handle_status from after_sale join user on after_sale.user_id=user.user_id join t_order
+		on after_sale.a_order_id=t_order.id where after_sale.user_id=#{2} and handle_status!=4 limit #{0},#{1}
+	</select>
+	<select id="selectAllByAdmin" parameterType="java.lang.Integer" resultType="After_saleQuery">
+		select after_sale.after_sale_id,after_sale.a_order_id,t_order.id,user.user_name,t_order.delivery_time,after_sale.after_sale_reason,after_sale.handle_status from after_sale join user on after_sale.user_id=user.user_id join t_order
+		on after_sale.a_order_id=t_order.id where handle_status!=4 limit #{0},#{1}
+	</select>
+	<select id="selectAllByTime" resultType="After_saleQuery">
+		select after_sale.after_sale_id,after_sale.a_order_id,t_order.id,user.user_name,t_order.delivery_time,after_sale.after_sale_reason,after_sale.handle_status from after_sale join user on after_sale.user_id=user.user_id join t_order
+		on after_sale.a_order_id=t_order.id where delivery_time=#{2} and handle_status!=4 limit #{0},#{1}
+	</select>
+	<update id="updateHandleStatus" >
+		update after_sale set handle_status=#{1} where after_sale_id=#{0} 
+	</update>
+	<select id="selectById" parameterType="java.lang.String" resultType="com.htzhny.entity.After_sale">
+		select * from after_sale where after_sale_id=#{after_sale_id}
+	</select>
+
+</mapper>

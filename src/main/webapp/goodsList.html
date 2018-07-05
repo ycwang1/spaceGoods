@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<!-- -->
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script type="text/javascript" src="js/layer.js"></script>
+<script type="text/javascript">
+
+	var obj = sessionStorage.getItem('user');//{"userName":"Mr wang","userType":1}
+	var user =JSON.parse(obj);//user对象 
+	var pages=0;//当前页数
+	var goodsType=sessionStorage.getItem("goodsType");
+	if(!goodsType){
+		goodsType='all';
+	}
+	$(document).ready(function(c) {
+     	var data={
+                "goodsType":""
+    		};
+		$.ajax({//查询商品种类
+	             url: "/freshSystem/goods_type/showAllType.action",        //后台url
+				 data:JSON.stringify(data),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',  
+	             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+	             success: function (data) {      //成功，回调函数    画页面
+	            	 data=data.list;
+                 	// $("#goodsType").remove();//移除
+                 //	 $("#title").append("<ul id='goodsType'></ul>");
+                 	 if(data){
+                 		for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+                            $("#goodsType").append("<li style='float:left;padding:0.2em;'><a href='javascript:void(0)' onclick=\"getGoodsByType('"+data[i].id+"')\" style='font-size:20px'>"+data[i].goods_type_name+"</a></li>");
+                        }
+  	                	findMoreGoods();//查询所有种类商品
+                 	 }
+	                  
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	});
+	function getGoodsByType(goodsType){
+		pages=0;//重置当前页面
+		sessionStorage.setItem("goodsType",goodsType);
+		window.location.reload();
+	}
+	function findMoreGoods(){//根据种类查询商品
+		var data;//请求参数
+		pages+=1;
+		
+		if(goodsType=='all'){
+			data={
+	     			"currentPage":pages
+	    		};
+			$.ajax({
+	             url: "/freshSystem/goods/selectAllGoods.action",        //后台url
+	             data:JSON.stringify(data),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',   
+	             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+	             success: function (data) {      //成功，回调函数    画页面
+	            	data = data.list1;
+		            	 //$("#goods").remove();//移除
+		                 //$("#goodsType").append("<table class='table table-hover text-center' id='goods'></table>");
+		           	if(data){
+		           		for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+		                       $("#goods").append("<tr><td rowspan='2'><img src="+data[i].id+"></td><td colspan='3'><a href='javascript:openPage("+data[i].id+")'>"+data[i].goods_name+"</a></td></tr><tr><td><input type='button' value='基地严选'/></td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"</td><td><input type='button' value='加入菜篮' onclick=\"addToMyBasket('"+data[i].id+"')\"></input></td></tr>");
+		                       //如果添加class或者id内容要加单引号例如：$("#first").append("<li class='a'>"+data[i].name+"</li>");
+		                }
+		           	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+		}else{
+			data={
+	     			"currentPage":pages,
+	                "goods_type":goodsType
+	    		};
+			$.ajax({
+	             url: "/freshSystem/goods/selectGoodsByType.action",        //后台url
+	             data:JSON.stringify(data),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',   
+	             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+	             success: function (data) {      //成功，回调函数    画页面
+	            	 data=data.list1;
+	             
+	             	//	$("#goods").remove();//移除
+		             //   $("#goodsType").append("<table class='table table-hover text-center' id='goods'></table>");
+	             	if(data){
+	             		for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+	                        $("#goods").append("<tr><td rowspan='2'><img src="+data[i].id+"></td><td colspan='3'><a href='javascript:openPage("+data[i].id+")'>"+data[i].goods_name+"</a></td></tr><tr><td><input type='button' value='基地严选'/></td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"</td><td><input type='button' value='加入菜篮' onclick=\"addToMyBasket('"+data[i].id+"')\"></input></td></tr>");
+	                        //如果添加class或者id内容要加单引号例如：$("#first").append("<li class='a'>"+data[i].name+"</li>");
+	            			}	
+	             	}
+            		
+            		
+	             },
+	             
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+		}
+	}
+	function addToMyBasket(goodsId){//加入菜篮 
+	
+     	var data={
+                "goodsId":goodsId,
+                "amount":1
+    		};
+		$.ajax({//
+             url: "/freshSystem/buyCart/addGoods.action",        //后台url
+             data:JSON.stringify(data),
+             type: "POST",                   //类型，POST或者GET
+             dataType: 'json',              //数据返回类型，可以是xml、json等
+             contentType:'application/json;charset=UTF-8',
+             success: function (data) {      //成功，回调函数    画页面
+            	 if(data){
+            		 layer.msg('添加成功');
+            	 }
+                   },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+	}
+	function openPage(obj){//订单详情
+		sessionStorage.setItem('goodsId', obj);
+	    location.href="./goodsDetail.html"; 
+	}
+	
+</script>
+</head>
+<body>
+<div>
+	<form method="post" id="listform">
+	  <div class="panel admin-panel">
+	  	<table id="title" style="background-color:#20B2AA">
+	  		<tr><td>
+	  			<div class="title">
+			    	<ul >
+				    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+				    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">商品列表</a></li>
+				    	<li style="float:left;padding:0.2em;"><a href="./myBasket.html" style="color:#FFFFFF;font-size:25px;">我的菜篮</a></li>
+			    	</ul>
+			    </div>
+	  		</td>
+	  		<tr style="visibility: hidden;"><td>111111111111111111111111111111111111111111111111111111111111</td></tr>
+	  	</table>
+	   	<ul id="goodsType">
+	   		<li style="float:left;padding:0.2em;"><a onclick="javascript:getGoodsByType('all')" style="font-size:20px">全部</a></li>
+	   	</ul>
+	    <table class="table table-hover text-center" id="goods">
+	    </table>
+	  </div>
+	</form>
+</div>
+<div class="footer" style="poestion:relative">
+	<a href="javaScript:findMoreGoods()">查看更多</a>
+</div>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

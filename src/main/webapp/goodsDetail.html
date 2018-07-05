@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script type="text/javascript" src="js/layer.js"></script>
+<script>
+	var obj = sessionStorage.getItem('user');//{"userName":"Mr wang","userType":1}
+	var user =JSON.parse(obj);//user对象 
+	var goodsId = sessionStorage.getItem("goodsId");
+	var userId = user.id;
+	$(document).ready(function(c) {
+		var data={
+				"goodsId":goodsId
+		};
+		if(goodsId){
+			$.ajax({//查询商品详情
+	             url: "/freshSystem/goods/selectGoodsById.action",        //后台url
+	             data:JSON.stringify(data),
+	             type: "POST",                //类型，POST或者GET
+	             dataType: 'json',     
+	             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+	             success: function (data) {      //成功，回调函数    画页面
+	                data=data.goods;
+	             	if(data){
+	             		$('#goodsName').val(data.goods_name);//品名
+	                 	$('#introduce').val(data.goods_introduce);//产品介绍
+						$('#lowPrice').val(data.goods_low_price);//单价低价
+						$('#highPrice').val(data.goods_high_price);//单价高价
+						$('#base').val(data.base_id);//基地id
+						$('#goodsDetailText').val(data.goodsDetailText);//产品详情
+						$('#inspectionReportText').val(data.inspectionReportText);//质检详情
+						$('#goodsSourceText').val(data.goodsSourceText);//产品溯源
+						$('#baseDetailText').val(data.baseDetailText);//基地详情
+						//$('#totalPrice').val(data.totalPrice+"元");//合计金额
+						if(user.user_type=='2'){
+							$('#showButton').hide();
+						}
+						changeTotalPrice();
+	             	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+		}
+	});
+	function editGoodsDetail(){
+		document.getElementById('goodsDetail').style.display="block";
+		document.getElementById('inspectionReport').style.display="none";
+		document.getElementById('goodsSource').style.display="none";
+		document.getElementById('baseDetail').style.display="none";
+	}
+	function editInspectionReport(){
+		document.getElementById('goodsDetail').style.display="none";
+		document.getElementById('inspectionReport').style.display="block";
+		document.getElementById('goodsSource').style.display="none";
+		document.getElementById('baseDetail').style.display="none";
+	}
+	function editGoodsSource(){
+		document.getElementById('goodsDetail').style.display="none";
+		document.getElementById('inspectionReport').style.display="none";
+		document.getElementById('goodsSource').style.display="block";
+		document.getElementById('baseDetail').style.display="none";
+	}
+	function editBaseDetail(){
+		document.getElementById('goodsDetail').style.display="none";
+		document.getElementById('inspectionReport').style.display="none";
+		document.getElementById('goodsSource').style.display="none";
+		document.getElementById('baseDetail').style.display="block";
+	}
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+	function changeTotalPrice(){//改变合计金额
+		var lowPrice=$('#lowPrice').val();
+		var highPrice=$('#highPrice').val();
+		var amount=$('#amount').val();
+		var totalLowerPrice=lowPrice*amount;//计算金额
+		var totalHighPrice =highPrice*amount;
+		$('#totalPrice').html(''+totalLowerPrice+'~'+totalHighPrice+'元');
+	}
+	function addToMyBasket(){//加入菜篮
+		var amount=$('#amount').val()
+		var data={
+                "goodsId":goodsId,
+                "amount":parseInt(amount) //数量
+    		};
+		//alert(goodsId);
+		$.ajax({//
+             url: "/freshSystem/buyCart/addGoods.action",        //后台url
+             data:JSON.stringify(data),
+             type: "POST",           //类型，POST或者GET
+             dataType: 'json',   
+             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+             success: function (data) {      //成功，回调函数    画页面
+            	 	layer.msg('添加成功');
+                   },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+	}
+	function createOrder(){
+		if(!confirm("确认购买？")){
+			return;
+		}
+		var amount=$('#amount').val()
+		var data={
+                "goodsId":goodsId,
+                "amount":parseInt(amount) //数量
+    		};
+		//alert(goodsId);
+		$.ajax({//
+             url: "/freshSystem/buyCart/addGoods.action",        //后台url
+             data:JSON.stringify(data),
+             type: "POST",           //类型，POST或者GET
+             dataType: 'json',   
+             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+             success: function (data) {      //成功，回调函数    画页面
+                 	//alert(1);
+             		if(data){
+             			window.location.href="myBasket.html";
+             		}
+                   },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+	}
+</script>
+</head>
+<body>
+ <div class="panel admin-panel">
+ 	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+		    		<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">商品详情</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+  		</td></tr>
+  		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  	</table> 
+   <table class="table table-hover text-center">
+     <tr>
+       <td rowspan="5"><img src="./images/vegetable3.jpg"/></td>
+       <td>品名：</td>
+       <td><input type="text" id="goodsName" disabled="true"/></td>
+     </tr>
+     <tr>
+       <td>介绍：</td>
+       <td><input type="text" id="introduce" disabled="true"/></td>
+     </tr>
+     <tr>
+       <td>单价：</td>
+       <td><input type="text" id="lowPrice" disabled="true"/>---<input type="text" id="highPrice" disabled="true"/>元/kg</td>
+     </tr>
+     <tr>
+       <td>数量：</td>
+       <td><input id="amount" type="number" min="0" value="1" onchange="changeTotalPrice()"/></td>
+     </tr>
+     <tr>
+       <td>基地：</td>
+       <td>
+	        <select id="base">
+			  <option value="volvo">开阳基地</option>
+			  <option value="saab">Saab</option>
+			  <option value="opel">Opel</option>
+			  <option value="audi">Audi</option>
+			</select>
+		</td>
+     </tr>
+     <tr>
+       <td>合计：</td>
+       <td><b id="totalPrice">7.80~10.1元/千克</b></td>
+     </tr>
+   </table>
+   <div id='showButton'> 
+   		<input type="button" value="加入菜篮" onclick="addToMyBasket()"/>
+   		<input type="button" value="立即购买" onclick="createOrder()"/>
+   </div>
+   
+ </div>
+ <table class="table table-hover text-center">
+ 	<tr>
+ 		<td><a href="javascript:editGoodsDetail()">产品详情</a></td>
+ 		<td><a href="javascript:editInspectionReport()">质检报告</a></td>
+ 		<td><a href="javascript:editGoodsSource()">产品溯源</a></td>
+ 		<td><a href="javascript:editBaseDetail()">基地详情</a></td>
+ 	</tr>
+ </table>
+ <div id="goodsDetail" style="display:block;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><textarea id="goodsDetailText" disabled="true">
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <div id="inspectionReport" style="display:none;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><textarea id="inspectionReportText" disabled="true" >
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <div id="goodsSource" style="display:none;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><textarea id="goodsSourceText"  disabled="true">
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <div id="baseDetail" style="display:none;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><textarea id="baseDetailText" disabled="true">
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.htzhny.dao.OrderLogDao">
+	<resultMap type="com.htzhny.entity.OrderLog" id="BaseOrderLog">
+		<id column="log_id" property="log_id"/>
+		<result column="order_id" property="order_id"/>
+		<result column="handle_time" property="handle_time"/>
+		<result column="event" property="event"/>
+	</resultMap>
+	<insert id="addLog" parameterType="com.htzhny.entity.OrderLog">
+		insert into order_log(order_id,handle_time,event) value(#{order_id},#{handle_time},#{event})
+	</insert>
+	<select id="findOneOrderLog" parameterType="String" resultMap="BaseOrderLog">
+		select * from order_log where order_id=#{order_id}
+	</select>
+	<select id="findOrderLog" resultMap="BaseOrderLog">
+		select * from order_log where order_id=#{0} and event=#{1}
+	</select>
+</mapper>

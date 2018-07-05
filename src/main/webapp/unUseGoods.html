@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<!-- -->
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script type="text/javascript">
+
+	var obj = sessionStorage.getItem('user');//{"userName":"Mr wang","userType":1}
+	$(document).ready(function(c) {
+     	var data={
+                "goods_status":0
+    		};
+		$.ajax({//查询已下架商品
+	             url: "/freshSystem/goods/selectGoodsStatus.action",        //后台url
+				 data:JSON.stringify(data),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',  
+	             contentType:'application/json;charset=UTF-8',//数据返回类型，可以是xml、json等
+	             success: function (data) {      //成功，回调函数    画页面
+	            	 data=data.list1;
+                 	 if(data){
+                 		for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+	                        $("#goods").append("<tr><td rowspan='2'><img src="+data[i].id+"></td><td colspan='2'><a href='javascript:openPage("+data[i].id+")'>"+data[i].goods_name+"</a></td></tr><tr><td><input type='button' value='基地严选'/></td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"</td><td><input type='button' value='上架菜品' onclick=\"editGoodsStatus('"+data[i].id+"')\"></input></td></tr>");
+                        }
+                 	 }
+	                 
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	});
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+	function editGoodsStatus(goodsId){
+		if(!confirm("确认上架菜品？")){
+			return;
+		}
+		message={
+				"goods_status": 1,
+				"goods_id": parseInt(goodsId)
+			};
+			$.ajax({//更新商品信息
+	             url: "/freshSystem/goods/updateGoodsStatus.action",        //后台url
+	             data: JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数    画页面
+	                 	if(data.result==1){
+	                 		window.location.reload();
+	                 	}else{
+	                 		alert("下架失败");
+	                 	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	            	 alert("下架失败");
+	             }
+	         });
+	}
+</script>
+</head>
+<body>
+<div>
+	<form method="post" id="listform">
+	  <div class="panel admin-panel">
+	  	<header class="panel-head" ><strong>已下架商品</strong></header> 
+	  	<table id="title">
+	  		<tr><td>
+	  			<div class="title">
+			    	<ul >
+				    	<li style="float:left;padding:0.2em;"><a href="./index.html">返回首页</a></li>
+				    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()">返回上一级</a></li>
+			    	</ul>
+			    </div>
+	  		</td>
+	  	</table>
+	    <table class="table table-hover text-center" id="goods">
+	    </table>
+	  </div>
+	</form>
+</div>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

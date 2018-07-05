@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script type="text/javascript">
+	var obj = sessionStorage.getItem('user');//{"userName":"Mr wang","userType":1}
+	var user =JSON.parse(obj);//user对象 
+	var data;
+	$(document).ready(function(c) {
+			//初始化方法
+		var message = {
+				"userId":user.id   //用户id	
+		};
+		$.ajax({//查询我的收获地址
+	             url: "/freshSystem/address/findAddressByUserId.action",        //后台url
+	             data: JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数    画页面
+	                 	//alert(data.result);
+	                 	data=data.addressList;
+	                 	if(data){
+	                 		for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+	    	                  	if(data[i].isDefault==1){
+	    	                  	   $("#addressList").append("<tr><td rowspan='3'>默认收货地址：</td><td>地址：</td><td>"+data[i].address_detail+"</td></tr><tr><td>电话：</td><td>"+data[i].receiver_phone+"</td></tr><tr><td>收货人：</td><td>"+data[i].receiver+"</td></tr>");
+	    	                  	}else{
+	    	                  	   $("#addressList").append("<tr><td rowspan='3'></td><td>地址：</td><td>"+data[i].address_detail+"</td></tr><tr><td>电话：</td><td>"+data[i].receiver_phone+"</td></tr><tr><td>收货人：</td><td>"+data[i].receiver+"</td></tr>");
+	    	                  	}
+	    	                  	$('#addressSelect').append("<option  value='"+data[i].id+"'>"+data[i].address_detail+"</option>");
+	                         }
+	                 	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                // alert(er);
+	             }
+	         });
+		
+	});
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+	function setDefaultAddress(){//设为默认地址
+		var addressId=$('#addressSelect').val();
+		$.ajax({//将地址设为默认收货地址
+	             url: "/freshSystem/address/setDefaultAddress.action",        //后台url
+	             data: {                          //数据
+	                 userId:user.id   , //用户id
+	                 addressId:addressId
+	             },
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             success: function (data) {      //成功，回调函数    画页面
+	            	 	if(data){
+	            	 		//alert("设置成功");
+	            	 	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	}
+	function addAddress(){//新增收货地址
+		sessionStorage.removeItem("addressId");
+		window.location.href="editAddress.html"; 
+	}
+	function editAddress(){//修改收货地址
+		var addressId=$('#addressSelect').val();
+		if(addressId){
+			sessionStorage.setItem("addressId",addressId);
+		}
+		window.location.href="editAddress.html"; 
+	}
+</script>
+</head>
+<body>
+  <div class="panel admin-panel">
+	 <table id="title" style="background-color:#20B2AA">
+ 		<tr><td>
+ 			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">我的收获地址</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html" style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+ 		</td></tr>
+ 		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  	</table>
+    <table class="table table-hover text-center" id="addressList">
+      </table>
+        <table class="table table-hover text-center">
+        <tr>
+          <td rowspan="2">
+          	<select id="addressSelect">
+          	</select>
+          </td>
+          <td style="float:center"><!-- <input type="submit" onclick="setDefaultAddress()" value="设为默认地址"></input> --></td>
+        </tr>
+        <tr>
+          <td style="float:center">
+          	<input type="submit" onclick="addAddress()" value="新增收货地址"></input>
+          	<input type="submit" onclick="editAddress()" value="修改地址"></input>
+          </td>
+        </tr>
+    </table>
+  </div>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

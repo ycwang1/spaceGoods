@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+var orderStatus=sessionStorage.getItem("orderStatus");
+if(!orderStatus){
+	orderStatus=3;
+}
+var pages=0;
+var orderStatusName={"1":"待报价","2":"待确认","3":"待发货","4":"待收货","5":"售后处理中","6":"已完成"};
+$(document).ready(function(c) {
+			//初始化方法
+	findMoreOrderByStatus();	
+			
+});
+function getOrderDetail(orderId,orderPrice,lowPrice,highPrice){//跳转到订单详情页面  id为订单id
+	 sessionStorage.setItem("orderId",orderId);
+	 sessionStorage.setItem("orderStatus",orderStatus);
+	 sessionStorage.setItem("orderPrice",orderPrice);
+	 sessionStorage.setItem("lowPrice",lowPrice);
+	 sessionStorage.setItem("highPrice",highPrice);
+	 if(orderStatus==5){
+		 window.location.href="./clientAfterSaleDetail.html"; //售后详情页面
+	 }else{
+		 window.location.href="./clientOrderDetail.html"; 
+	 }
+	 
+}
+function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+function findOrderByStatus(orderStatus){
+	pages = 1;//重置当前页数
+	sessionStorage.setItem("orderStatus",orderStatus);//存储订单状态
+	window.location.reload();
+}
+function findMoreOrderByStatus(){
+	pages+=1;//查找第几页
+	
+	var data={
+			"status":""+orderStatus,
+			"user_id":0,
+			"currentPage":pages
+		};
+	$.ajax({//订单状态查找订单
+			
+          url: "/freshSystem/order/selectAllOrderByStatus.action",        //后台url
+          data: JSON.stringify(data),
+          type: "POST",                   //类型，POST或者GET
+          dataType: 'json',              //数据返回类型，可以是xml、json等
+          contentType:'application/json;charset=UTF-8',
+          success: function (data) {      //成功，回调函数
+        	  
+          	data = data.list1;
+          	if(data){
+          		for(var i=0;i<data.length;i++){
+          		    $("#order").append("<tr><td>"+data[i].id+"</td><td>"+data[i].user_company+"</td><td>"+data[i].delivery_time+"</td><td>"+orderStatusName[data[i].order_status]+"</td><td><a href='javascript:void(0)' onclick=\"getOrderDetail('"+data[i].id+"','"+data[i].order_real_price+"','"+data[i].order_low_price+"','"+data[i].order_high_price+"')\">查看</a></td></tr>");
+              	}
+          	}
+          },
+          error: function (er) {          //失败，回调函数
+              alert(er);
+              //var data ={"list1":[{"address":"贵阳市贵阳一中","create_time":"2018-6-5","delivery_time":"2018-6-6","id":"1535452","order_high_price":100.5,"order_low_price":88.2,"order_real_price":0,"order_status":1,"pay_status":0,"user_id":2},{"address":"贵阳市贵阳一中","create_time":"4546546","delivery_time":"5744","id":"231242","order_high_price":13,"order_low_price":12,"order_real_price":12.5,"order_status":1,"pay_status":1,"user_id":2}]}
+          	//	data = data.list1;
+	       //   	for(var i=0;i<data.length;i++){
+	       //  		if(data[i].order_real_price==0){
+	        // 		    $("#order").append("<tr><td>"+data[i].id+"</td><td>待定</td><td>"+orderStatusName[data[i].order_status]+"</td><td>"+data[i].address+"</td><td>"+data[i].delivery_time+"</td><td><a href='javascript:void(0)' onclick=\"getOrderDetail('"+data[i].id+"')\">查看</a></td></tr>");
+	       //   		}else{
+	      //    		    $("#order").append("<tr><td>"+data[i].id+"</td><td>"+data[i].order_real_price+"</td><td>"+orderStatusName[data[i].order_status]+"</td><td>"+data[i].address+"</td><td>"+data[i].delivery_time+"</td><td><a href='javascript:void(0)' onclick=\"getOrderDetail('"+data[i].id+"')\">查看</a></td></tr>");
+	      //   		}
+        //		}
+          }
+      });		
+}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+  	<table id="title" style="background-color:#20B2AA">
+	  		<tr><td>
+	  			<div class="title">
+			    	<ul >
+				    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+				    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">所有订单</a></li>
+			    	</ul>
+			    </div>
+	  		</td> </tr>
+	  		<tr style="visibility: hidden;"><td>111111111111111111111111111111111111111111111111111111111111</td></tr>
+	  	</table>
+    	<ul >
+    		<!-- <li style="float:left;padding:0.2em;"><a href="javaScript:findOrderByStatus('2')">待确认订单</a></li> -->
+    		<li style="float:left;padding:0.2em;"><a href="javaScript:findOrderByStatus('3')">待发货订单</a></li>
+    		<li style="float:left;padding:0.2em;"><a href="javaScript:findOrderByStatus('4')">待收货订单</a></li>
+    		<li style="float:left;padding:0.2em;"><a href="javaScript:findOrderByStatus('6')">已完成订单</a></li>
+    		<li style="float:left;padding:0.2em;"><a href="javaScript:findOrderByStatus('5')">售后处理</a></li>
+    	</ul>
+    <table class="table table-hover text-center" id="order">
+      <tr>
+        <th style="text-align:center; padding:0.5em 2em;">订单号</th>
+        <th>用户</th>
+        <th>配送日期</th>
+        <th>订单状态</th>
+        <th>操作</th>
+      </tr>
+        
+    </table>
+  </div>
+</form>
+<div class="footer">
+	<a href="javaScript:findMoreOrderByStatus()">查看更多</a>
+</div>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

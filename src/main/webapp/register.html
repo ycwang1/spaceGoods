@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>注册</title>
+<link href="register.css" rel="stylesheet" type="text/css" media="all" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<!-- -->
+<script type="text/script">
+	
+</script>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+	$(document).ready(function(c) {
+		//初始化方法
+	});
+	function register(){//注册方法
+		//checkMessage();
+		var user={
+				 "user": {
+				      "id": 0,
+				      "user_name": document.getElementById("userLoginAccount").value,
+				      "password": document.getElementById("password").value,
+				      "user_type": "1",
+				      "user_phone": document.getElementById("userLoginAccount").value,
+				      "user_id_type": "1",
+				      "user_id_card": "",
+				      "user_birthday": "",
+				      "user_company": "",
+				      "create_time": "",
+				      "user_last_login_time": "",
+				      "status": "1",
+				      "user_img": ""
+				  }
+		}
+		$.ajax({
+	             url: "/freshSystem/user/register.action",        //后台url
+	             data: JSON.stringify(user),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数
+	             	if(data.user){
+	             		sessionStorage.setItem("user",JSON.stringify(data.user));
+		                window.location.href="./index.html"; 
+	             	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	}
+	function checkMessage(){ //信息校验
+		//手机号验证
+	    var sMobile = document.getElementById("userLoginAccount").value;
+	    if(!(/^1[3|4|5|8][0-9]\d{4,8}$/.test(sMobile))){ 
+	        alert("不是完整的11位手机号或者正确的手机号前七位"); 
+	        document.mobileform.mobile.focus(); 
+	        return false; 
+	    }
+	    var pPattern = /^.*(?=.{6,})(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).*$/;
+	    var password=document.getElementById("password").value;
+	    var repassword=document.getElementById("repassword").value;
+		if(!pPattern.test(password)){//密码验证
+			alert("密码最少6位，包括至少1个大写字母，1个小写字母，1个数字，1个特殊字符");
+			document.mobileform.mobile.focus(); 
+			return false;
+		} else if(password!=repassword){
+			alert("两次密码输入不一致");
+			document.mobileform.mobile.focus(); 
+			return false;
+		}
+	    //身份证号（18位）正则
+		//var cP = /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+		//if(cP.test(document.getElementById("IdCard").value)){
+		//	alert("身份证号输入错误");
+		//	document.mobileform.mobile.focus(); 
+		//	return false;
+		//}
+	} 
+</script>
+</head>
+<body>
+<!-- contact-form -->	
+<div class="message warning">
+	<div class="inset">
+		<div class="login-head">
+			<h1>用户注册</h1>
+		</div>
+		<form>
+			<ul>
+			<li>
+				<p>账号:</p>
+				<input type="text" class="text" id="userLoginAccount" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '请输入手机号';}"/>
+			</li>
+				
+			<div class="clear"> </div>
+			<!-- <li>
+				<p>身份证号:</p>
+				<input type="text" class="text" id="IdCard" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '请输入身份证号';}">
+			</input></li>
+				
+			<div class="clear"> </div> -->
+			<li>
+				<p>密码:</p>
+				<input type="password" autocomplete="new-password"  value="Password" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Password';}" id="password"> 
+				</input>
+			</li>
+			<div class="clear"></div>
+			<li>
+				<p>确认密码:</p>
+			   	<input type="password" autocomplete="new-password" value="Password" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Password';}" id="repassword">
+			    </input> 
+			 </li>
+			 </ul>
+			<div class="clear"> </div>
+			<div class="submit">
+				<input type="button" value="注册" onclick="register()" dir="rtl">
+				</input>
+				<input type="reset" value="重置"/> 
+		  	</div>
+	  	</form>
+	</div>					
+</div>
+<li style='visibility: hidden'>
+	<input type="password" autocomplete="new-password" value="请输入密码" id="password2" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Password';}"> <a href="#" class="icon lock"></a>
+</li>
+<div class="clear"> </div>
+</body>
+</html>

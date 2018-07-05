@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="js/jquery.js"></script>
+<script src="js/pintuer.js"></script>
+<script>
+	$(document).ready(function(c) {
+	
+		$.ajax({//查询昨日市场行情
+	            url: "/fresh/user/getMarket.action",        //后台url
+	            data: {                          //数据
+	                date:""  //日期
+	            },
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            success: function (data) {      //成功，回调函数
+	                
+	                for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+	                	$("#market").append("<tr><td style='display:none'>"+data[i].goodsId+"</td><td>"+data[i].goodsName+"</td><td><input type='text' id='"+data[i].goodsId+"Area'/></td><td>"+data[i].date+"</td><td><input type='text' id='"+data[i].goodsId"Price'/></td><td><input type='button' value='确定' onclick='updateMarket('"+data[i].goodsId+"')'></input></td></tr>");
+	                }
+	            },
+	            error: function (er) {          //失败，回调函数
+	                alert(er);
+	                $("#market").append("<tr><td style='display:none'>"+data[i].goodsId+"</td><td>"+data[i].goodsName+"</td><td><input type='text' id='"+data[i].goodsId+"Area'/></td><td>"+data[i].date+"</td><td><input type='text' id='"+data[i].goodsId"Price'/></td><td><input type='button' value='确定' onclick='updateMarket('"+data[i].goodsId+"')'></input></td></tr>");
+	                
+	            }
+	       });
+	});
+	function updateMarket(goodsId){
+		var area = $('#"+goodsId+"Area').val();
+		var price = $('#"+goodsId+"Price').val();
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+    <header class="panel-head"><strong> 价格行情</strong></header>
+    <table id="title">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html">返回首页</a></li>
+		    	</ul>
+		    </div>
+  		</td></th>
+  	</table>
+  	<div><b>昨日的市场行情如下</b></div>
+    <table class="table table-hover text-center">
+      <tr>
+        <th style="text-align:center; padding:20px; display:none;">ID</th>
+        <th>品名</th>
+        <th>地区</th>
+        <th>日期</th>
+        <th>均价</th>
+        <th>操作</th>
+      </tr>
+      <tr>
+        <td style="display:none;">1</td>
+        <td>胡萝卜</td>
+        <td>贵州</td>
+        <td>2018-04-10</td>
+        <td>2.5元/公斤</td>
+        <td><input type="button"></input></td>
+      </tr>
+    </table>
+  </div>
+</form>
+<script type="text/javascript">
+</script>
+</body>
+</html>

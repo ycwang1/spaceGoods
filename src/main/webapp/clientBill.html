@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+var pages=0;//当前页码
+var orderStatus=6;//订单状态
+var message;//后台参数
+var payStatus=sessionStorage.getItem("payStatus");//支付状态
+if(!payStatus){
+	payStatus=1;//未支付
+}
+	$(document).ready(function(c) {
+			//初始化方法
+        //findMoreOrder();//查找账单
+        findMoreAllOrder();
+	});
+	function getOrder(payStatus){//获取1：本月账单，2：上月待支付账单 3：历史账单
+		pages=0;
+		sessionStorage.setItem("payStatus",payStatus);
+		sessionStorage.removeItem("findUserId");
+		window.location.reload();
+	}
+	function findMoreAllOrder(){//查询所有用户
+		
+		pages+=1;
+		message={                          //数据
+                "currentPage":""+pages,
+                "bill_status":""+payStatus
+            };
+		$.ajax({//
+            url: "/freshSystem/order/selectAllOrderByPayStatus.action",        //后台url
+            data: JSON.stringify(message),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数    画页面
+            	//data={"list1":[{"address":"贵阳市贵阳一中","create_time":"2018-6-5","delivery_time":"2018-6-6","id":"1535452","order_high_price":100.5,"order_low_price":88.2,"order_real_price":0,"order_status":1,"pay_status":0,"user_company":"贵阳一中123","user_id":2},{"address":"贵州省贵阳一中","create_time":"2018-4-22","delivery_time":"2018-4-7","id":"268d5b7cd-6f24-4a73-bfc7-89774ef57c75","order_high_price":61.6,"order_low_price":54,"order_real_price":0,"order_status":6,"pay_status":0,"user_company":"贵阳一中123","user_id":2}],"mseller_month_total_money":81.0};
+            	if(!data.seller_month_total_money){
+            		$("#allAccount").text("0元");//应付金额
+            	}else{
+            		$("#allAccount").text(data.seller_month_total_money+"元");//应付金额
+            	}
+            	if(!data.seller_month_total_money){
+            		$("#account").text("0元");//应付金额
+            	}else{
+            		$("#account").text(data.seller_month_total_money+"元");//应付金额
+            	}
+            	 userList = data.userList;
+           	     data=data.list1;
+                 for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+                  	$("#myBillList").append("<tr><td>"+data[i].id+"</td><td>"+data[i].order_real_price+"</td><td>"+data[i].address+"</td><td>"+data[i].delivery_time+"</td><td><a href='javascript:void(0)' onclick=\"getOrderDetail('"+data[i].id+"','"+data[i].order_real_price+"')\">查看</a></td></tr>");
+                 }
+                 $("#user option:not(:first)").remove();
+                 for(var i=0;i<userList.length;i++){//
+                   	$("#user").append("<option value='"+userList[i].id+"'>"+userList[i].user_company+" </option>");
+                  }
+                 
+            },
+            error: function (er) {          //失败，回调函数
+                alert(er);
+            }
+        });	
+	}
+	function findMoreOrderByUserId(userId){//根据用户查找
+		
+		pages+=1;
+		message={                          //数据
+                "user_id":""+userId,//userId //用户id
+                "currentPage":""+pages,
+                "bill_status":""+payStatus
+            };
+		$.ajax({//根据userId查找本月账单
+            url: "/freshSystem/order/selectUserOrderByBillStatus.action",        //后台url
+            data: JSON.stringify(message),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数    画页面
+            	//data={"list1":[{"address":"贵阳市贵阳一中","create_time":"2018-6-5","delivery_time":"2018-6-6","id":"1535452","order_high_price":100.5,"order_low_price":88.2,"order_real_price":0,"order_status":1,"pay_status":0,"user_company":"贵阳一中123","user_id":2},{"address":"贵州省贵阳一中","create_time":"2018-4-22","delivery_time":"2018-4-7","id":"268d5b7cd-6f24-4a73-bfc7-89774ef57c75","order_high_price":61.6,"order_low_price":54,"order_real_price":0,"order_status":6,"pay_status":0,"user_company":"贵阳一中123","user_id":2}],"month_pay_money":81.0};
+            	if(!data.month_pay_money){
+            		$("#account").text("0元");//应付金额
+            	}else{
+            		$("#account").text(data.month_pay_money+"元");//应付金额
+            	}
+           	     data=data.list1;
+                 for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+                  	$("#myBillList").append("<tr><td>"+data[i].id+"</td><td>"+data[i].order_real_price+"</td><td>"+data[i].address+"</td><td>"+data[i].delivery_time+"</td><td><a href='javascript:void(0)' onclick=\"getOrderDetail('"+data[i].id+"','"+data[i].order_real_price+"')\">查看</a></td></tr>");
+                 }
+            },
+            error: function (er) {          //失败，回调函数
+                alert(er);
+            }
+        });	
+	}
+	function getOrderDetail(orderId,orderPrice){//进入订单详情
+		sessionStorage.setItem("orderId",orderId);
+		sessionStorage.setItem("orderPrice",orderPrice);//订单价格
+		sessionStorage.setItem("orderStatus",6);//已完成订单状态
+	 	window.location.href="./clientOrderDetail.html"; 
+	}
+	function getOrderByUserId(obj){
+		pages=0;
+		$("#myBillList  tr:not(:first)").empty("");  
+		if(obj.value=='all'){
+			sessionStorage.removeItem("findUserId");
+			$('#updatePayStatus').html('');
+			findMoreAllOrder();
+		}else{
+			sessionStorage.setItem("findUserId",obj.value);
+			findMoreOrderByUserId(obj.value);
+			if(payStatus==2){
+				$('#updatePayStatus').html('<input type="button" value="支付" onclick="updatePayStatus()">');
+			}
+		}
+		
+	}
+	function findMoreOrder(){
+		var userId = sessionStorage.getItem("findUserId");
+		if(userId){//用户查看更多
+			findMoreOrderByUserId(userId);
+		}else{//所有用户查看更多
+			findMoreAllOrder();
+		}
+	}
+	function updatePayStatus(){//根据用户id更新支付状态
+		if(!confirm("确认支付?")){
+			return;
+		}
+		var userId = sessionStorage.getItem("findUserId");
+		message={                          //数据
+                "user_id":parseInt(userId)//userId //用户id
+            };
+		$.ajax({//根据用户id更新支付状态
+            url: "/freshSystem/order/updatePayStatusByUser.action",        //后台url
+            data: JSON.stringify(message),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数    画页面
+				if(data){
+					window.location.reload();
+				}else{
+					alert("修改失败");
+				}
+            },
+            error: function (er) {          //失败，回调函数
+            	alert("修改失败");
+            }
+        });	
+		
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+  	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">账单</a></li>
+		    	</ul>
+		    </div>
+  		</td></tr>
+  		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  		<tr><td colspan="3">
+  			<ul id="billTitle">
+    		<li style="float:left;padding:0.2em;"><a href="javascript:getOrder(1)" style="color:#FFFFFF;font-size:20px;">本月账单</a></li>
+	   		<li style="float:left;padding:0.2em;"><a href="javascript:getOrder(2)" style="color:#FFFFFF;font-size:20px;">上月待支付账单</a></li>
+	   		<li style="float:left;padding:0.2em;"><a href="javascript:getOrder(3)" style="color:#FFFFFF;font-size:20px;">历史账单</a></li>
+    	</ul>
+  		</td></tr>
+  	</table> 
+  	
+	<div>
+  	<strong style="float:right;"><b>本月所有用户应付账单为:</b>
+  		<b id="allAccount">￥0 元</b>
+  	</strong>
+  </div>
+  </div>
+   	<table class="table table-hover text-center">
+   		<tr>
+   			<th>
+   				<b>请选择用户:</b>
+   			</th>
+	   		<th>
+	   			<select id="user" onchange="getOrderByUserId(this)">
+		   			<option value="all">全部</option>
+		   			<!-- <option value="user_name1">贵阳市贵阳一中</option>
+		   			<option value="user_name2">贵阳市贵阳二中</option> -->
+		   		</select>
+	   		</th>
+   		</tr>
+   	</table>
+    <table class="table table-hover text-center" id="myBillList">
+      <tr>
+        <th style="text-align:center; padding:0.5em 2em;">订单号</th>
+        <th>金额(元)</th>
+        <th>收货地址</th>
+        <th>时间</th>
+        <th>操作</th>
+      </tr>
+    </table>
+  </div>
+  <div>
+  	<strong style="float:right;"><b>本月应付金额:</b>
+  		<b id="account">￥0 元</b>
+  	</strong>
+  </div>
+</form>
+
+<div class="footer">
+	<a href="javaScript:findMoreOrder()">查看更多</a>
+</div>
+<div id="updatePayStatus">
+</div>
+<script type="text/javascript">
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>首页</title>
+<!-- <link href="index.css" rel="stylesheet" type="text/css" media="all" /> -->
+<link href="css/pintuer.css" rel="stylesheet" type="text/css" media="all" />
+<link href="css/admin.css" rel="stylesheet" type="text/css" media="all" />
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<script src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/include.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script type="text/javascript" src="js/layer.js"></script>
+<script>
+	$(document).ready(function(c) {
+		
+	});
+	<!-- 用户对象 -->
+	//获取登录用户信息
+	var user = sessionStorage.getItem('user');//
+	var user1=JSON.parse(user);
+	//if(user_type==""||user_type==null){
+		//user_type=1;
+	//}
+	var data={"user_name":""
+			};
+    $(function(){
+       $.ajax({//查询推荐商品
+            url: "/freshSystem/goods/selectRecommendedGoods.action",        //后台url
+            data: JSON.stringify(data),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数
+                data=data.list1;
+            	if(data){
+            		for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+                    	$("#recommendDishes2").append("<tr><td>"+data[i].goods_name+"</td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"元</td><td><textarea style='display:none;'>"+data[i].id+"</textarea><input type='button' onclick='joinMyBasket(this)' value='加入菜篮'/></td></tr>");
+                    	$("#recommendDishes1").append("<tr><td>"+data[i].goods_name+"</td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"元</td><td><textarea style='display:none;'>"+data[i].id+"</textarea><input type='button' onclick='openPage(this)' value='查看'/></td></tr>");
+                    }
+            	}
+            },
+            error: function (er) {          //失败，回调函数
+                alert(er);
+            }
+       });
+        if(user1.user_type==1){
+    		document.getElementById('user').style.display="block";
+    		document.getElementById('userRecommend').style.display="block";
+    		document.getElementById('userFoot').style.display="block";
+    		
+    	}else{
+    	    document.getElementById('supplier').style.display="block";
+    	    document.getElementById('modifyPrice').style.display="block";
+    	    document.getElementById('supplierRecommend').style.display="block";
+    		document.getElementById('supplierFoot').style.display="block";
+
+    	}
+    });
+    function joinMyBasket(obj){//加入菜篮   取消本地cookie存储
+    	var td = obj.parentNode;//父节点
+    	var goodsId=td.firstChild.value;
+    	var message = {
+    			"goodsId":goodsId,
+                "amount":1
+    	};
+    	$.ajax({//
+             url: "/freshSystem/buyCart/addGoods.action",        //后台url
+             data: JSON.stringify(message),
+             type: "POST",                   //类型，POST或者GET
+             dataType: 'json',              //数据返回类型，可以是xml、json等
+             contentType:'application/json;charset=UTF-8',
+             success: function (data) {      //成功，回调函数    画页面
+                 	//alert(data.result);
+            	 	layer.msg('添加成功');
+                   },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+    }
+    function openPage(obj){//蔬菜详情
+    	var td = obj.parentNode;//父节点
+    	var goodsId=td.firstChild.value;
+		sessionStorage.setItem('goodsId', goodsId);
+	    location.href="./goodsDetail.html"; 
+	}
+    function openOrderList(type){
+    	if(type==1){
+    		sessionStorage.setItem('orderStatus', 1);
+    		location.href="./userOrderList.html";
+    	}else{
+    		sessionStorage.setItem('orderStatus', 3);
+    		location.href="./clientOrderList.html";
+    	}
+    	
+    }
+</script>
+</head>
+<body >
+	<div id="user" style="display:none;">
+		<table border=0>
+			<tr><td style="text-align: center;background-color:#20B2AA"><h2 style="color:#FFFFFF;">生鲜系统客户端</h2></td></tr>
+			<tr style="background-color:#20B2AA"><td style="color:#20B2AA;">11111111111111111111111111111111111111111111111111111</td></tr>
+		</table>  
+  	</div>
+  	<div id="supplier" style="display:none;">
+	  	<table border=0>
+			<tr><td style="text-align: center;background-color:#20B2AA"><h2 style="color:#FFFFFF;">生鲜系统供应商端</h2></td></tr>
+			<tr style="background-color:#20B2AA;"><td style="color:#20B2AA;">11111111111111111111111111111111111111111111111111111</td></tr>
+		</table> 
+  	
+  </div>
+  		<div><h2> 市场行情</h2> <a href="#" style="float:right;display:none;" id="modifyPrice">修改行情价格</a></div>
+    <table class="table table-hover text-center" id="market">
+      <tr>
+        <th style="text-align:center; padding:20px; display:none">ID</th>
+        <th>品名</th>
+        <th>地区</th>
+        <th>日期</th>
+        <th>均价</th>
+      </tr>
+    </table>
+   <div class="panel admin-panel" id="supplierRecommend" style="display:none">
+  		<div><h2>推荐菜品</h2> <a href="editRecommendDishes.html" style="float:right;" id="modifyRecommend">修改推荐菜品</a></div>
+  		<table class="table table-hover text-center" id="recommendDishes1">
+	      <tr>
+	        <td>蔬菜名称</td>
+	        <td>蔬菜价格</td>
+	        <td>操作</td>
+	      </tr>
+       </table> 
+  </div>
+  <div class="panel admin-panel" id="userRecommend" style="display:none">
+  		<div class="panel-head"><h2>今日推荐</h2>
+  		<table class="table table-hover text-center" id="recommendDishes2">
+	      <tr>
+	        <td>蔬菜名称</td>
+	        <td>蔬菜价格</td>
+	        <td>操作</td>
+	      </tr>
+	      </table>
+	     </div> 
+  </div>
+  <div class="foot" id="userFoot" style="display:none;">
+  		<table>
+			<tr><td style="text-align: center;background-color:#20B2AA">
+				<ul>
+			    	<li style="float:left;padding:0.2em;"><a href="./goodsList.html" style="color:#FFFFFF;font-size:15px;">去买菜</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./myBasket.html" style="color:#FFFFFF;font-size:15px;">我的菜篮</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:void(0);" onclick="openOrderList(1)" style="color:#FFFFFF;font-size:15px;">我的订单</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./userBill.html" style="color:#FFFFFF;font-size:15px;">结算中心</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./user.html" style="color:#FFFFFF;font-size:15px;">个人中心</a></li>
+			    </ul>
+			  </td></tr>
+			<tr style="visibility: hidden;"><td>11111111111111111111111111111111111111111111111111111</td></tr>
+		</table>  
+  </div>
+  <div class="foot" id="supplierFoot" style="display:none;">
+  		<table>
+			<tr><td style="text-align: center;background-color:#20B2AA">
+				<ul>
+			    	<li style="float:left;padding:0.2em;"><a href="./pendingQuateOrder.html" style="color:#FFFFFF;font-size:20px;">待报价</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:void(0);" onclick="openOrderList(2)" style="color:#FFFFFF;font-size:20px;">订单处理</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./clientBill.html" style="color:#FFFFFF;font-size:20px;">账单中心</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./vegetableCenter.html" style="color:#FFFFFF;font-size:20px;">菜品中心</a></li>
+		    	</ul>
+			  </td></tr>
+			<tr style="visibility: hidden;"><td>11111111111111111111111111111111111111111111111111111</td></tr>
+		</table>  
+  </div>
+</body>
+<script>
+	$('#market').load('./marketList.html');
+</script>
+</html>

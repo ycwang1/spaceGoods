@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+	var goodsId = sessionStorage.getItem('goodsId');
+	var message;//请求参数
+	var goods;//产品信息
+	$(document).ready(function(c) {
+		if(goodsId){
+			message =  {                          //数据
+	                "goodsId":goodsId
+	        };
+				$.ajax({//查询商品详情
+		             url: "/freshSystem/goods/selectGoodsById.action",        //后台url
+		             data: JSON.stringify(message),
+		             type: "POST",                   //类型，POST或者GET
+		             dataType: 'json',              //数据返回类型，可以是xml、json等
+		             contentType:'application/json;charset=UTF-8',
+		             success: function (data) {      //成功，回调函数    画页面
+		            	//data = {"goods" : {"goods_name":"大白菜","goods_low_price":12.6,"goods_high_price":15.8,"goods_type":1,"goods_detai":"一颗大白菜","goods_status":1,"goods_Recommended":0,
+		            	//	"goods_create_time":"2018-6-6","goods_img":"www.baidu.com"}};
+	                 	data = data.goods;
+	                 	if(data){
+	                 		$('#img').val(data.goods_img);//图片
+	                     	$('#goodsName').val(data.goods_name);//品名
+	    					$('#lowPrice').val(data.goods_low_price);//单价低价
+	    					$('#highPrice').val(data.goods_high_price);//单价高价
+	    					$('#base').val(data.base);//基地id
+	    					$('#goodsDetailText').val(data.goods_detai);//产品详情
+	    					$('#inspectionReportText').val(data.inspectionReportText);//质检详情
+	    					$('#goodsSourceText').val(data.goodsSourceText);//产品溯源
+	    					$('#baseDetailText').val(data.baseDetailText);//基地详情
+	                 	}
+		             },
+		             error: function (er) {          //失败，回调函数
+		                 alert(er);
+		               /*  var data = {"goods" : {"goods_name":"大白菜","goods_low_price":12.6,"goods_high_price":15.8,"goods_type":1,"goods_detai":"一颗大白菜","goods_status":1,"goods_Recommended":0,
+			            		"goods_create_time":"2018-6-6","goods_img":"www.baidu.com"}};
+		                 	data = data.goods;
+		                 	$('#img').val(data.goods_img);//图片
+		                 	$('#goodsName').val(data.goods_name);//品名
+		                 	$('#introduce').val(data.goods_name);//产品介绍
+							$('#lowPrice').val(data.goods_low_price);//单价低价
+							$('#highPrice').val(data.goods_high_price);//单价高价
+							$('#base').val(data.base);//基地id
+							$('#goodsDetailText').val(data.goods_detai);//产品详情
+							$('#inspectionReportText').val(data.inspectionReportText);//质检详情
+							$('#goodsSourceText').val(data.goodsSourceText);//产品溯源
+							$('#baseDetailText').val(data.baseDetailText);//基地详情 */
+		             }
+		         });
+			}
+	});
+	function editGoodsDetail(){
+		document.getElementById('goodsDetail').style.display="block";
+		document.getElementById('inspectionReport').style.display="none";
+		document.getElementById('goodsSource').style.display="none";
+		document.getElementById('baseDetail').style.display="none";
+	}
+	function editInspectionReport(){
+		document.getElementById('goodsDetail').style.display="none";
+		document.getElementById('inspectionReport').style.display="block";
+		document.getElementById('goodsSource').style.display="none";
+		document.getElementById('baseDetail').style.display="none";
+	}
+	function editGoodsSource(){
+		document.getElementById('goodsDetail').style.display="none";
+		document.getElementById('inspectionReport').style.display="none";
+		document.getElementById('goodsSource').style.display="block";
+		document.getElementById('baseDetail').style.display="none";
+	}
+	function editBaseDetail(){
+		document.getElementById('goodsDetail').style.display="none";
+		document.getElementById('inspectionReport').style.display="none";
+		document.getElementById('goodsSource').style.display="none";
+		document.getElementById('baseDetail').style.display="block";
+	}
+	function updateGoods(){
+		if(!confirm("确认提交？")){
+			return;
+		}
+		var goodsName=$('#goodsName').val();//品名
+		var introduce = $("#introduce").val();//介绍
+		var lowPrice=$('#lowPrice').val();//单价低价
+		var highPrice=$('#highPrice').val();//单价高价
+		var base=$('#base').val();//基地id
+		var goodsDetailText=$('#goodsDetailText').val();//产品详情
+		var inspectionReportText=$('#inspectionReportText').val();//质检详情
+		var goodsSourceText=$('#goodsSourceText').val();//产品溯源
+		var baseDetailText=$('#baseDetailText').val();//基地详情
+		if(goodsId){
+			message={
+					"goods": {
+						"base_id": baseDetailText,
+						"goods_Recommended": 0,
+						"goods_create_time": "2018-6-6",
+						"goods_detail": goodsDetailText,
+						"goods_high_price": highPrice,
+						"goods_img": "www.baidu.com",
+						"goods_introduce": introduce,
+						"goods_low_price": lowPrice,
+						"goods_name": goodsName,
+						"goods_quality_report_id": inspectionReportText,
+						"goods_resource_id": 0,
+						"goods_status": 1,
+						"goods_type": 0,
+						"id": goodsId
+					}
+				};
+				$.ajax({//更新商品信息
+		             url: "/freshSystem/goods/updateGoods.action",        //后台url
+		             data: JSON.stringify(message),
+		             type: "POST",                   //类型，POST或者GET
+		             dataType: 'json',              //数据返回类型，可以是xml、json等
+		             contentType:'application/json;charset=UTF-8',
+		             success: function (data) {      //成功，回调函数    画页面
+		            	 if(data.result==1){
+		                 		window.history.go(-1); // 返回上一页  
+		                 	}else{
+		                 		alert("更新失败");
+		                 	}
+		             },
+		             error: function (er) {          //失败，回调函数
+		            	 alert("更新失败");
+		             }
+		         });
+		}else{//新增商品
+			message={
+					"goods": {
+						"base_id": baseDetailText,
+						"goods_Recommended": 0,
+						"goods_create_time": "2018-6-6",
+						"goods_detail": goodsDetailText,
+						"goods_high_price": lowPrice,
+						"goods_img": "www.baidu.com",
+						"goods_introduce": introduce,
+						"goods_low_price": highPrice,
+						"goods_name": goodsName,
+						"goods_quality_report_id": inspectionReportText,
+						"goods_resource_id": 0,
+						"goods_status": 1,
+						"goods_type": 0,
+						"id": goodsId
+					}
+				};
+				$.ajax({//新增商品信息
+		             url: "/freshSystem/goods/addGoods.action",        //后台url
+		             data: JSON.stringify(message),
+		             type: "POST",                   //类型，POST或者GET
+		             dataType: 'json',              //数据返回类型，可以是xml、json等
+		             contentType:'application/json;charset=UTF-8',
+		             success: function (data) {      //成功，回调函数    画页面
+		            	 if(data.result==1){
+		                 		window.history.go(-1); // 返回上一页  
+		                 	}else{
+		                 		alert("新增失败");
+		                 	}
+		             },
+		             error: function (er) {          //失败，回调函数
+		            	 alert("新增失败");
+		             }
+		         });
+		}
+		
+	}
+	
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+</script>
+</head>
+<body>
+ <div class="panel admin-panel">
+ 	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">商品详情</a></li>
+		    		<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+  		</td></tr>
+  		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  	</table> 
+   <table class="table table-hover text-center">
+     <tr>
+       <td rowspan="5"><img id="img" src="./images/vegetable3.jpg"/></td>
+       <td>品名：</td>
+       <td><input type="text" id="goodsName"/></td>
+     </tr>
+     <tr>
+       <td>介绍：</td>
+       <td><input type="text" id="introduce"/></td>
+     </tr>
+     <tr>
+       <td>单价：</td>
+       <td><input type="text" id="lowPrice"/>---<input type="text" id="highPrice"/></td>
+     </tr>
+     <tr>
+       <td>基地：</td>
+       <td>
+        <select id="base">
+		  <option value="volvo">开阳基地</option>
+		  <option value="saab">Saab</option>
+		  <option value="opel">Opel</option>
+		  <option value="audi">Audi</option>
+		</select>
+	</td>
+     </tr>
+   </table>
+ </div>
+ <table class="table table-hover text-center">
+ 	<tr>
+ 		<td><a href="javascript:editGoodsDetail()">产品详情</a></td>
+ 		<td><a href="javascript:editInspectionReport()">质检报告</a></td>
+ 		<td><a href="javascript:editGoodsSource()">产品溯源</a></td>
+ 		<td><a href="javascript:editBaseDetail()">基地详情</a></td>
+ 	</tr>
+ </table>
+ <div id="goodsDetail" style="display:block;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><b>请编辑产品详情</b></td>
+ 		</tr>
+ 		<tr>
+ 			<td><textarea id="goodsDetailText">
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <div id="inspectionReport" style="display:none;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><b>请编辑质检详情</b></td>
+ 		</tr>
+ 		<tr>
+ 			<td><textarea id="inspectionReportText" >
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <div id="goodsSource" style="display:none;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><b>请产品溯源详情</b></td>
+ 		</tr>
+ 		<tr>
+ 			<td><textarea id="goodsSourceText" >
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <div id="baseDetail" style="display:none;">
+ 	<table class="table table-hover text-left">
+ 		<tr>
+ 			<td><b>请编辑基地详情</b></td>
+ 		</tr>
+ 		<tr>
+ 			<td><textarea id="baseDetailText">
+ 			</textarea></td>
+ 		</tr>
+ 	</table>
+ </div>
+ <input type="button" onclick="updateGoods()" value="提交"></input>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

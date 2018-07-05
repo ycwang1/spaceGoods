@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+	$(document).ready(function(c) {
+		var data ={};
+		$.ajax({//根据用户id查询菜篮中数据
+	            url: "/freshSystem/buyCart/selectBuyCart.action",        //后台url
+	            data: JSON.stringify(data),
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            contentType:'application/json;charset=UTF-8',
+	            success: function (data) {      //成功，回调函数
+	            	if(data.result==0||data.buyCart.items.length<1){
+	                	$('#myBasket').html("<a href=\"./goodsList.html\">您的菜篮中暂时没有蔬菜!去买菜。</a>");
+	                	$('#buttonGroup').hide();
+	                }else{
+	                	data = data.buyCart.items;
+		                for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+							$("#myBasket").append("<tr><td style='display:none;'>"+data[i].goods.id+"</td><td>"+data[i].goods.goods_name+"</td><td>"+data[i].goods.goods_low_price+"~"+data[i].goods.goods_high_price+"</td><td><input id='amount' type='number' min='1' value='"+data[i].amount+"'/></td><td><input type='button' value='删除' onclick=\"deleteGoods("+data[i].goods.id+")\"/></td></tr>");
+		                }
+	                }
+	            },
+	            error: function (er) {          //失败，回调函数
+	                alert(er);
+	            }
+	        });
+	});
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+	function createOrder(){//生成订单
+		if(!confirm("确认购买？")){
+			return;
+		}
+		var param = {};
+		var list =new Array();
+		$('#myBasket tr').not(':eq(0)').each(function(i){  
+			 var id = $(this).children('td').eq(0).text();
+		     // var amount = $(this).children('td').eq(1).val();
+		     // var price = $(this).children('td').eq(2).text(); 
+		     var amount = $(this).children('td').eq(3).find('input').val();  
+	     	 // var goodsId= $(this).children('td').eq(3).find('input').attr('id');  
+	     	  param={				//list格式
+					"goods_id": parseInt(id),
+					"amount": parseInt(amount)
+			  };
+	     	
+	     	 list.push(param);
+		    }) 
+		var data ={
+				"list":list
+		};
+		$.ajax({
+	            url: "/freshSystem/buyCart/createOrder.action",        //后台url
+	            data:JSON.stringify(data),
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            contentType:'application/json;charset=UTF-8',
+	            success: function (data) {      //成功，回调函数
+	                //alert(data.result);
+	                sessionStorage.setItem("data",JSON.stringify(data));
+	                window.location.href="./orderSubmit.html";
+	            },
+	            error: function (er) {          //失败，回调函数
+	                alert(er);
+	            }
+	        });
+	}
+	function deleteGoods(goodsId){//删除一个购物项
+		if(!confirm("确认删除？")){
+			return;
+		}
+		var data ={"goods_id":goodsId};
+		$.ajax({
+	            url: "/freshSystem/buyCart/deleteItem.action",        //后台url
+	            data: JSON.stringify(data),
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            contentType:'application/json;charset=UTF-8',
+	            success: function (data) {      //成功，回调函数
+	                //alert(data.result);
+	                window.location.reload(); 
+	            },
+	            error: function (er) {          //失败，回调函数
+	                alert(er);
+	            }
+	        });
+	}
+	function deleteAllGoods(){//清空购物车
+		if(!confirm("确认清空购物车？")){
+			return;
+		}
+		var data ={};
+		$.ajax({
+	            url: "/freshSystem/buyCart/clearBuyCart.action",        //后台url
+	            data: JSON.stringify(data),
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            contentType:'application/json;charset=UTF-8',
+	            success: function (data) {      //成功，回调函数
+	                
+	                window.location.reload(); 
+	               // window.location.href="orderSubmit.html"; 
+	            },
+	            error: function (er) {          //失败，回调函数
+	                alert(er);
+	            }
+	        });
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+   <div class="panel admin-panel">
+  	<table style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul>
+		    		<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()" style="color:#FFFFFF;font-size:25px;">返回</a></li>	
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">我的菜篮</a></li>			    	
+		    		<li style="float:left;padding:0.2em;"><a href="./index.html" style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+  		</td></tr>
+  		<tr style="visibility: hidden;"><td>111111111111111111111111111111111111111111111111111111111111</td></tr>
+  		
+  	</table>
+    <div class="panel-head"><h2>您购买了如下产品：</h2> </div>
+    <table class="table table-hover text-center" id="myBasket">
+      <tr>
+        <th style="text-align:center; padding:20px; display:none;">ID</th>
+        <th>品名</th>
+        <th>单价</th>
+        <th>数量</th>
+        <th>操作</th>
+      </tr>
+      <!-- <volist name="list" id="vo"> -->
+        
+    </table>
+  </div>
+  <div id="buttonGroup">
+	  <div class="button-group">  <a class="button border-red" href="javascript:createOrder()"><span class="icon-trash-o"></span> 结算</a> </div>
+	  <div class="button-group">  <a class="button border-red" href="javascript:deleteAllGoods()"><span class="icon-trash-o"></span> 清空</a> </div>
+  </div>
+  </form>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

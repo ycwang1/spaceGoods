@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+var message;//请求参数
+//var goodsType=sessionStorage.getItem("goodsType");
+
+	$(document).ready(function(c) {
+		message={};
+		$.ajax({//查询商品种类
+	             url: "/freshSystem/goods_type/showAllType.action",        //后台url
+	             data:JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数    画页面
+	            	 data=data.list;
+	                 //	$("#goodsType").remove();//移除
+	                 if(data){
+	                	 for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+	                         $("#goods").append("<tr><td>"+data[i].id+"</td><td>"+data[i].goods_type_name+"</td><td>"+data[i].create_time+"</td><td><input type='button' onclick='deleteGoodsType("+data[i].id+")' value='删除'/><input type='button' onclick='editGoodsType("+data[i].id+")' value='修改'/></td></tr>");
+	                     } 
+	                 }
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	});
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+	function editGoodsType(goodsTypeId){
+		var str=prompt("请输入种类名称","");
+	    if(str)
+	    {
+	    	if(!confirm("确认添加？")){
+				return;
+			}
+	    	message={
+	    			"goods_type":{  "goods_type_name":str,
+                	"id":goodsTypeId}
+	    			//数据
+	               
+	             };
+	       $.ajax({//修改商品种类
+	             url: "/freshSystem/goods_type/updateGoods_type_name.action",        //后台url
+	             data:JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数    画页面
+	            	if(data.result==1){
+             			window.location.reload();
+             		}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	    }
+	}
+	function deleteGoodsType(goodsTypeId){
+		if(!confirm("确认删除？")){
+			return;
+		}
+		message={ "goods_type":{                         //数据
+                "id":goodsTypeId,
+                "status":0}
+            };
+		$.ajax({//删除商品种类
+	             url: "/freshSystem/goods_type/updateGoods_type_status.action",        //后台url
+	             data:JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数    画页面
+	                 	//alert(data.result);
+	                 	if(data.result==1){
+	             			window.location.reload();
+	             		}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	}
+	function addGoodsType(){
+		if(!confirm("确认添加？")){
+			return;
+		}
+		var goodsTypeName = $('#goodsTypeName').val();
+		message={  "goods_type" :{                     //数据
+                "goods_type_name":goodsTypeName,
+                "create_time":getNowFormatDate(),
+                "status":1}  
+            };
+		$.ajax({//新增商品种类
+	             url: "/freshSystem/goods_type/addGoods_type.action",        //后台url
+	             data:JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数    画页面
+	                 	//alert(data.result);
+	             		if(data.result==1){
+	             			window.location.reload();
+	             		}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	             }
+	         });
+	}
+	function getNowFormatDate() {//获取当前日期  格式 : 2018/08/01
+        var date = new Date();
+        var seperator1 = "/";
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var strDate = date.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        }
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        }
+        var currentdate = year + seperator1 + month + seperator1 + strDate;
+        return currentdate;
+    }
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+  	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">编辑菜品种类</a></li>
+		    		<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+  		</td>
+  		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  	</table> 
+  	<div><strong>现有的菜品种类详情如下:</strong></div>
+    <table class="table table-hover text-center" id="goods">
+      <tr>
+        <th>种类编号</th>
+        <th>种类名称</th>
+        <th>添加日期</th>
+        <th>操作</th>
+      </tr>
+    </table>
+    <div>添加菜品种类：<input type="text"  id="goodsTypeName"/> <input type="button" onclick="addGoodsType()" value="确定"/></div>
+  </div>
+</form>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

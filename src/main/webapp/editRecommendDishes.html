@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="js/jquery.js"></script>
+<script src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+var message;//请求参数
+	$(document).ready(function(c) {
+		message={};
+		$.ajax({//查询推荐菜品
+	            url: "/freshSystem/goods/selectRecommendedGoods.action",        //后台url
+	            data: JSON.stringify(message),
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            contentType:'application/json;charset=UTF-8',
+	            success: function (data) {      //成功，回调函数
+	                //alert(data.result);
+	                data=data.list1;
+	                if(data){
+	                	for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+		                	$("#recommendGoods").append("<tr><td>"+data[i].id+"</td><td>"+data[i].goods_name+"</td><td>"+data[i].goods_create_time+"</td><td><input type='button' value='删除' onclick='deleteDishes("+data[i].id+")'></input></td></tr>");
+		                }
+		                getUnRecommendGoods();
+	                }
+	            },
+	            error: function (er) {          //失败，回调函数
+                	alert(er);
+	            	//$("#goods").append("<option value='hu1'>胡萝卜1</option>");
+		            //$("#goods").append("<option value='hu2'>胡萝卜2</option>");
+	            }
+	       });
+	});
+	function getUnRecommendGoods(){//查询所有产品  画下拉框
+		message={};
+		$.ajax({//查询所有产品
+		            url: "/freshSystem/goods/selectAll.action",        //后台url
+		            data: JSON.stringify(message),
+		            type: "POST",                   //类型，POST或者GET
+		            dataType: 'json',              //数据返回类型，可以是xml、json等
+		            contentType:'application/json;charset=UTF-8',
+		            success: function (data) {      //成功，回调函数
+		                //alert(data.res1ult);
+		                data=data.list1;
+		                if(data){
+		                	for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+			                	if(data[i].goods_Recommended==0){//非推荐产品
+			                		$("#goods").append("<option value='"+data[i].id+"'>"+data[i].goods_name+"</option>");
+			                	}
+			                }
+		                }
+		            },
+		            error: function (er) {          //失败，回调函数
+		                alert(er);
+	                	
+	                	//$("#goods").append("<option value='hu1'>胡萝卜1</option>");
+	                	//$("#goods").append("<option value='hu2'>胡萝卜2</option>");
+		                	
+		            }
+		       });
+	}
+	function deleteDishes(goodsId){
+		if(!confirm("确认删除？")){
+			return;
+		}
+		message={
+				"goods_id":""+goodsId,  //菜品编号
+                "goods_Recommended":0
+		};
+		$.ajax({//删除推荐菜品
+            url: "/freshSystem/goods/updateGoodsRecommendedstatus.action",        //后台url
+            data: JSON.stringify(message),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数
+                if(data.result==1){
+                	window.location.reload();
+                }
+                
+            },
+            error: function (er) {          //失败，回调函数
+                alert(er);
+            }
+       });
+	}
+	function addRecommendGoods(){
+		if(!confirm("确认添加？")){
+			return;
+		}
+		var goodsId = $('#goods').val();
+		message={
+				"goods_id":goodsId,  //菜品编号
+                "goods_Recommended":1
+		};
+		$.ajax({//增加推荐商品
+            url: "/freshSystem/goods/updateGoodsRecommendedstatus.action",        //后台url
+            data: JSON.stringify(message),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数
+                //alert(data.result);
+            	if(data.result==1){
+                	window.location.reload();
+                }
+            },
+            error: function (er) {          //失败，回调函数
+                alert(er);
+            }
+       });
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+  	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+		    		<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">修改推荐产品</a></li>
+		    	</ul>
+		    </div>
+  		</td></tr>
+  		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  	</table> 
+  	<div><b>请在下表中对行情数据进行修改</b></div>
+    <table class="table table-hover text-center" id="recommendGoods">
+      <tr>
+        <th style="text-align:center; padding:20px;">菜品编号</th>
+        <th>菜名</th>
+        <th>推荐日期</th>
+        <th>操作</th>
+      </tr>
+    </table>
+    <div style="float:right;">
+    	<b>请添加推荐菜品</b>
+    	<select id="goods">
+    	</select>
+    	<input type="button" value="确认添加" onclick="addRecommendGoods()"/>
+    </div>
+  </div>
+</form>
+<script type="text/javascript">
+</script>
+</body>
+</html>

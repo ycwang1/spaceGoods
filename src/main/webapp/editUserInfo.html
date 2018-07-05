@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+//获取登录用户信息
+var obj = sessionStorage.getItem("user");
+var user = JSON.parse(obj);
+	$(document).ready(function(c) {
+			//初始化方法
+		<!-- 用户对象 -->
+		//$("#img").html(user.img);	//给用户资料赋值
+		if(user){
+			$("#name").val(user.user_name);
+			$("#birthday").val(user.user_birthday);
+			$("#userCompany").val(user.user_company);
+			$("#userPhone").val(user.user_phone);
+		}
+	});
+	function edit(){
+		var user = {
+				"user": {
+					"user_name": $("#name").val(),
+					"user_phone": $("#userPhone").val(),
+					"user_id_type": 1,
+					"user_id_card": "",
+					"user_birthday": $("#birthday").val(),
+					"user_company": $("#userCompany").val(),
+					"user_img": "www.baidu.com"
+				}
+			};
+		if(!confirm("确认修改？")){
+			return;
+		}
+		$.ajax({//修改个人信息接口
+	             url: "/freshSystem/user/updateMessage.action",        //后台url
+	             data: JSON.stringify(user),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数
+	            	 if(!data.result){
+	            		 sessionStorage.setItem("user",JSON.stringify(data.user));
+	            		 returnLastPage();
+	            	 }else{
+	            		 alert("修改失败");
+	            	 }
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert("修改失败");
+	             }
+	         });
+	}
+	function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}	
+</script>
+</head>
+<body>
+  <div class="panel admin-panel">
+	<table id="title" style="background-color:#20B2AA">
+ 		<tr><td>
+ 			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()"  style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">编辑个人资料</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html" style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+ 		</td></tr>
+ 		<tr style="visibility: hidden;"><td colspan="3">111111111111111111111111111111111111111111111111111111111111</td></tr>
+  	</table>
+    <div id="editUserInfo">
+	    <table class="table table-hover text-center"  >
+	      <tr>
+	        <th style="text-align:center; padding:0.5em 2em;" ></th>
+	      </tr>
+	      <volist name="list" id="vo">
+	        <!-- <tr>
+	          <td>头像:<input type="file" value="sdgsdg" id="demo_input" /> 
+				</td>
+	          
+	        </tr> -->
+	        <tr>
+	          <td>姓名:<input type="text" id="name" value="张三" disabled="true"/></td>
+	        </tr>
+	        <tr>
+	          <td>出生日期:<input type="date" id="birthday" value="1980-01-01" /></label></td>
+	        </tr>
+	        <tr>
+	          <td>所在单位<input type="text" id="userCompany" value="贵州省贵阳市贵阳一中" /></td>
+	        </tr>
+	        <tr>
+	          <td>联系电话<input type="text" id="userPhone" value="10086" /></td>
+	        </tr>
+	        <tr>
+	          <td><input type="submit" onclick="edit()" value="修改资料"/></td>
+	        </tr>
+	    </table>
+    </div>
+   </div>
+</body>
+</html>

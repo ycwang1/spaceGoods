@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script>
+var orderId =sessionStorage.getItem("orderId");
+var pages = 0;
+var eventName = {"1":"提交提单", "2":"报价", "3":"确认订单", "4":"发货", "5":"提交售后申请", "6":"售后处理完成", "7":"确认收货","8":"付款", "9":"取消售后申请"};
+
+$(document).ready(function(c) {
+
+			//初始化方法
+	findMoreOrderByStatus();	
+			
+});
+function returnLastPage(){
+	window.history.go(-1);
+}
+function updateOrder(){//更新报价
+	if(!confirm("确认提交？")){
+		return;
+	}
+	var param = {};
+	var list =new Array();
+	$('#order tr').not(':eq(0)').each(function(i){  
+		var id = $(this).children('td').eq(4).text();
+	      var amount = $(this).children('td').eq(1).text();
+	      var price = $(this).children('td').eq(2).text(); 
+	      var real_price = $(this).children('td').eq(3).find('input').val();  
+     	  var goodsId= $(this).children('td').eq(3).find('input').attr('id');  
+     	  param={
+				"id": id,
+				"goods_id": goodsId,
+				"order_id": orderId,
+				"goods_amount": amount,
+				"goods_real_price": parseFloat(real_price)
+		  };
+     	 list.push(param);
+	    })  
+		message={
+			"itemList":list
+		};
+		$.ajax({//更新订单报价
+             url: "/freshSystem/order_item/updateRealPrice.action",        //后台url
+             data: JSON.stringify(message),
+             type: "POST",                   //类型，POST或者GET
+             dataType: 'json',              //数据返回类型，可以是xml、json等
+             contentType:'application/json;charset=UTF-8',
+             success: function (data) {      //成功，回调函数
+            	 if(data.result==1){
+ 	                window.location.href="pendingQuateOrder.html"; 
+            	 }
+             },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+    		
+}
+function findMoreOrderByStatus(){//查看更多
+	pages+=1;//查找第几页
+	message={
+			id:orderId, //orderId 
+            currentPage:pages
+		};
+	$.ajax({//根据订单id查找订单详情
+             url: "/freshSystem/order_item/selectAllByOrderId.action",        //后台url
+             data: JSON.stringify(message),
+             type: "POST",                   //类型，POST或者GET
+             dataType: 'json',              //数据返回类型，可以是xml、json等
+             contentType:'application/json;charset=UTF-8',
+             success: function (data) {      //成功，回调函数
+            	orderLogList = data.orderLogList; //订单日志列表
+            	data=data.list1;
+             	if(data){
+             		for(var i=0;i<data.length;i++){
+                    	$("#order").append("<tr><td>"+data[i].goods_name+"</td><td>"+data[i].goods_amount+"</td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"</td><td>￥:<input type='text' id='"+data[i].goods_id+"'/></td><td style='display:none;'>"+data[i].id+"</td></tr>");
+                 	}
+             		if(pages==1){
+             			if(orderLogList.length>0){//订单日志信息
+                        	  //document.getElementById("orderLog").style.display ="block";
+                        	  for(var i=0;i<orderLogList.length;i++){//data.length是获取data的长度。for循环
+                        		  $("#log").append("<tr><td>"+eventName[parseInt(orderLogList[i].event)]+"</td><td>"+orderLogList[i].handle_time+"</td></tr>");    
+                        	  }
+                          }
+                       	showMsg(1);//显示信息
+             		}
+             	}
+             },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });		
+   }
+	function showMsg(type){//展示信息
+		if(type==1){//商品信息
+			document.getElementById("orderLog").style.display ="none";//日志信息不显示
+			document.getElementById("goodsDetail").style.display ="block";//商品信息显示
+		}else{
+			document.getElementById("goodsDetail").style.display ="none";//商品信息不显示
+			document.getElementById("orderLog").style.display ="block";
+		}
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+  	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()" style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">报价</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">首页</a></li>
+		    	</ul>
+		    </div>
+  		</td>
+  		<tr style="visibility: hidden;"><td>111111111111111111111111111111111111111111111111111111111111</td></tr>
+  		<tr>
+  			<td>
+	  			<div>
+			    	<ul>
+				    	<li style="float:left;padding:0.2em;"><a href="javascript:showMsg(1)" style="color:#FFFFFF;font-size:25px;">商品信息</a></li>
+				    	<li style="float:left;padding:0.2em;"><a href="javascript:showMsg(2)" style="color:#FFFFFF;font-size:25px;">订单状态流转信息</a></li>
+			    	</ul>
+			    </div>
+  			</td>
+  		</tr>
+  	</table>
+  </div>
+</form>
+<div id="goodsDetail" style="display:none;"><h2>订单商品信息:</h2>
+	 <table class="table table-hover text-center" id="order">
+	   <tr>
+	     <th>菜名</th>
+	     <th>数量</th>
+	     <th>价格</th>
+	     <th>报价</th>
+	     <th style="display:none;">id</th>
+	   </tr>
+	     
+	 </table>
+	 <input type="button" value="确定" onclick="updateOrder()"></input>
+	<div class="footer">
+		<a href="javaScript:findMoreOrderByStatus()">查看更多</a>
+	</div>
+</div>
+<p/><p/>
+<div id="orderLog" style="display=none;">
+	<div><h2>订单状态流转信息:</h2></div>
+	<table class="table table-hover text-center" id="log">
+      <tr>
+      	<th>事件</th>
+        <th>时间</th>
+      </tr>
+    </table>
+</div>
+<script type="text/javascript">
+
+
+</script>
+</body>
+</html>

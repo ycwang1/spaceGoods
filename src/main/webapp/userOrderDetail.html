@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="css/pintuer.css">
+<link rel="stylesheet" href="css/admin.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/pintuer.js"></script>
+<script type="text/javascript" src="js/include.js"></script>
+<script type="text/javascript" src="js/uploadImg.js"></script>
+<script type="text/javascript" src="js/JquerySession.js"></script>
+<script type="text/javascript" src="js/json.js"></script>
+<script type="text/javascript" src="js/back.js"></script>
+<script type="text/javascript" src="js/jquery.spinner.js"></script>
+<script>
+	var orderId = sessionStorage.getItem("orderId");
+	var orderStatusName={"1":"待报价","2":"待确认","3":"待发货","4":"待收货","5":"售后处理中","6":"已完成"};
+	var orderStatus = sessionStorage.getItem("orderStatus");
+	var afterSaleStatusName={"1": "发起申请","2": "同意申请","3": "拒绝申请"};
+	var pages=1;
+	var orderPrice = sessionStorage.getItem("orderPrice");
+	var lowPrice = sessionStorage.getItem("lowPrice");
+	var highPrice = sessionStorage.getItem("highPrice");
+	var obj = sessionStorage.getItem('user');//
+	var bill = sessionStorage.getItem('bill');//
+	var user=JSON.parse(obj);
+    var message;//请求参数
+    var eventName = {"1":"提交提单", "2":"报价", "3":"确认订单", "4":"发货", "5":"提交售后申请", "6":"售后处理完成", "7":"确认收货","8":"付款", "9":"取消售后申请"};
+	$(document).ready(function(c) {
+		message={
+				"id":orderId,   //orderId
+                "currentPage":pages
+		};
+			//初始化方法
+		$.ajax({//根据订单id查询订单详情
+             url: "/freshSystem/order_item/selectAllByOrderId.action",        //后台url
+             data:JSON.stringify(message),
+             type: "POST",                   //类型，POST或者GET
+             dataType: 'json',              //数据返回类型，可以是xml、json等
+             contentType:'application/json;charset=UTF-8',
+             success: function (data) {      //成功，回调函数
+                 orderLogList = data.orderLogList; //订单日志列表
+             	 data = data.list1;
+                 if(data){
+                	 if(data.length==1){//如果只有一个订单项   删除就是取消订单
+                		 $("#order").append("<tr><td style='display:none;'><input type='text' value='"+data[0].goods_id+"'/><input type='checkbox' value='"+data[0].id+"'/></td><td>"+data[0].goods_name+"</td><td>"+data[0].goods_low_price+"~"+data[0].goods_high_price+"</td><td><div class='goodsAmountText'>"+data[0].goods_amount+"</div><input class='goodsAmount' type='number' min=1 max='"+data[0].goods_amount+"' value='"+data[0].goods_amount+"'/></td><td><input type='text' disabled='true' value='"+data[0].goods_real_price+"'/></td><td><input type='button' value='删除' onclick=\"cancelOrder()\"/><input type='button' value='申请售后' onclick=\"editOrder(this)\"/></td></tr>");
+                	 }else{
+                		 for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+                    		 $("#order").append("<tr><td style='display:none;'><input type='text' value='"+data[i].goods_id+"'/><input type='checkbox' value='"+data[i].id+"'/></td><td>"+data[i].goods_name+"</td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"</td><td><div class='goodsAmountText'>"+data[i].goods_amount+"</div><input class='goodsAmount' type='number' min=1 max='"+data[i].goods_amount+"' value='"+data[i].goods_amount+"'/></td><td><input type='text' disabled='true' value='"+data[i].goods_real_price+"'/></td><td><input type='button' value='删除' onclick=\"deleteGoods(this)\"/><input type='button' value='申请售后' onclick=\"editOrder(this)\"/></td></tr>");
+                    	 }
+                	 }
+                	 if(orderStatus!=3&&orderStatus!=4){//订单项操作列处理
+             		    var tableTd = "td:eq(5),th:eq(5)";
+             		    $('#order tr').find(tableTd).hide();
+	              	 }else{
+	              		 if(orderStatus==4){
+	              			$('#order tr:gt(0) td').find('input[value="删除"]').hide();
+	              		 }else{
+	              			$('#order tr:gt(0) td').find('input[value="申请售后"]').hide();
+	              		 }
+	              	 }
+                	 $('#order tr:gt(0)').find('td:eq(3)').each(function(){
+                		 $(this).find('input[type="number"]').hide();
+                	 });
+	                  $("#orderStatus").text(orderStatusName[orderStatus]);//更改订单状态
+	                  if(orderStatus!=1){
+	                  	$("#account").text("￥"+orderPrice+"元");//更改订单金额
+	                  }else{
+	                  	$("#account").text("￥"+lowPrice+"~"+highPrice+"元");//更改订单金额
+	                  }
+	                  if(orderLogList){//订单日志信息
+	                	  for(var i=0;i<orderLogList.length;i++){//data.length是获取data的长度。for循环
+	                		  $("#log").append("<tr><td>"+eventName[parseInt(orderLogList[i].event)]+"</td><td>"+orderLogList[i].handle_time+"</td></tr>");    
+	                	  }
+	                  }
+	                  showMsg(1);//默认展示商品信息
+                 }
+             },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+	});
+	function cancelOrder(){//取消订单
+		if(confirm("是否取消订单？")){
+			message={
+					"status":0,//订单状态  待收货
+		            "id":orderId
+			};
+			$.ajax({//订单状态查找订单
+		          url: "/freshSystem/order/updateStatus.action",        //后台url
+		          data:JSON.stringify(message),
+		          type: "POST",                   //类型，POST或者GET
+		          dataType: 'json',              //数据返回类型，可以是xml、json等
+		          contentType:'application/json;charset=UTF-8',
+		          success: function (data) {      //成功，回调函数
+		          	if(data.result==1){
+		          		sessionStorage.setItem("orderStatus",1);
+		          		window.location.href="./userOrderList.html";
+		           	}
+		          },
+		          error: function (er) {          //失败，回调函数
+		              alert(er);
+		          }
+		      });
+		}
+	}
+	function findAfterSaleInfo(id){//查询售后信息
+		message={
+	            "order_id":id,
+	            "currentPage":1
+		};
+		$.ajax({
+          url: "/freshSystem/after_sale/selectOneById.action",        //后台url
+          data:JSON.stringify(message),
+          type: "POST",                   //类型，POST或者GET
+          dataType: 'json',              //数据返回类型，可以是xml、json等
+          contentType:'application/json;charset=UTF-8',
+          success: function (data) {      //成功，回调函数
+          	data =data.after_sale;
+          	if(data){
+          		$("#reason").val(data[0].after_sale_reason);//更改售后原因
+             	$("#reason").attr("disabled",true);//更改售后原因不可编辑
+             	$("#upload").html("");
+           		$("#dealWith").html("<strong><b>处理方式：</b><b>"+data.handle_way+"</b></strong>");//处理方式
+           		$("#afterSaleStatus").html("<strong><b>售后状态：</b><b>"+afterSaleStatusName[data.handle_status]+"</b></strong>");//售后状态
+          	}
+          },
+          error: function (er) {          //失败，回调函数
+              alert(er);
+          }
+      });
+	}
+	function preview(){//单张图片
+		 var config = {
+		 tip: "请上传格式为png, gif或者jpg的图片",
+		 fileId: "file",
+		 containerId: "container",
+		 	imgStyle: "width:320px;height:auto;border-radius:64%;"
+		 }
+		 var previewer = new ImgPrevirewer(config);
+		 previewer.preview();
+	 }
+	 function uploadImg(){//上传图片
+	 	var reason = $('#reason').val();
+	 	var config = {
+		 tip: "请上传格式为png, gif或者jpg的图片",
+		 fileId: "file",
+		 containerId: "container",
+		 	imgStyle: "width:320px;height:auto;border-radius:64%;"
+		 }
+		 var previewer = new ImgPrevirewer(config);
+		// alert(JSON.stringify(previewer));//图片数据
+		message={                          //数据
+                "after_sale": {
+					"after_sale_id": "",
+					"user_id":user.id,
+					"a_order_id": orderId,
+					"after_sale_reason": reason,
+					"handle_status": 1,
+					"handle_way": "",
+					"handle_person": "",
+					"handle_time": "",
+					"prove_img": JSON.stringify(previewer)
+				}
+             },
+		 $.ajax({//添加售后
+	             url: "/freshSystem/after_sale/addAfter_sale.action",        //后台url
+	             data:JSON.stringify(message),
+	             type: "POST",                   //类型，POST或者GET
+	             dataType: 'json',              //数据返回类型，可以是xml、json等
+	             contentType:'application/json;charset=UTF-8',
+	             success: function (data) {      //成功，回调函数
+	             	if(data.result==1){
+	             		updateOrderStatus();//修改订单状态
+	             	}
+	             },
+	             error: function (er) {          //失败，回调函数
+	                 alert(er);
+	                 //previewer.preview();
+	             }
+	         });	
+		 
+	 }
+	 function findMoreOrderByStatus(){//查看更多
+		 pages+=1;
+		 message={                          //数据
+                "id":orderId,   //orderId
+                "currentPage":pages
+            };
+	 	$.ajax({//根据订单id查询订单详情
+             url: "/freshSystem/order_item/selectAllByOrderId.action",        //后台url
+             data: JSON.stringify(message),
+             type: "POST",                   //类型，POST或者GET
+             dataType: 'json',              //数据返回类型，可以是xml、json等
+             contentType:'application/json;charset=UTF-8',
+             success: function (data) {      //成功，回调函数
+                 //alert(data.result);
+                 data = data.list1;
+                 if(data){
+                	 for(var i=0;i<data.length;i++){//data.length是获取data的长度。for循环
+                		 $("#order").append("<tr><td style='display:none;'><input type='text' value='"+data[i].goods_id+"'/><input type='checkbox' value='"+data[i].id+"'/></td><td>"+data[i].goods_name+"</td><td>"+data[i].goods_low_price+"~"+data[i].goods_high_price+"</td><td><div class='goodsAmountText'>"+data[0].goods_amount+"</div><input style='display:none;' class='goodsAmount' type='number' min=1 max='"+data[i].goods_amount+"' value='"+data[i].goods_amount+"'/></td><td><input type='text' disabled='true' value='"+data[i].goods_real_price+"'/></td><td><input type='button' value='删除' onclick=\"deleteGoods(this)\"/><input type='button' value='申请售后' onclick=\"editOrder(this)\"/></td></tr>");
+                	 }
+                     $("#orderStatus").text(orderStatusName[orderStatus]);//更改订单状态
+                     if(orderStatus!=1){
+                     	$("#account").text("￥"+orderPrice+"元");//更改订单金额
+                     }else{
+                     	$("#account").text("￥"+lowPrice+"~"+highPrice+"元");//更改订单金额
+                     }
+                     if(orderStatus!=3&&orderStatus!=4){//订单项操作列处理
+              		    var tableTd = "td:eq(5),th:eq(5)";
+              		    $('#order tr').find(tableTd).hide();
+ 	              	 }else{	
+ 	              		 if(orderStatus==4){
+ 	              			$('#order tr:gt(0) td').find('input[value="删除"]').hide();
+ 	              		 }else{
+ 	              			$('#order tr:gt(0) td').find('input[value="申请售后"]').hide();
+ 	              		 }
+ 	              	 }
+                 }
+             },
+             error: function (er) {          //失败，回调函数
+                 alert(er);
+             }
+         });
+	 }
+	 function returnLastPage(){//返回上一页
+		window.history.go(-1); // 返回上一页  
+	}
+	 function updateOrderStatus(){//更新订单状态
+		 message={
+					"status":5,//订单状态  待收货
+		            "id":orderId
+			};
+			$.ajax({//订单状态查找订单
+		          url: "/freshSystem/order/updateStatus.action",        //后台url
+		          data:JSON.stringify(message),
+		          type: "POST",                   //类型，POST或者GET
+		          dataType: 'json',              //数据返回类型，可以是xml、json等
+		          contentType:'application/json;charset=UTF-8',
+		          success: function (data) {      //成功，回调函数
+		          	if(data.result==1){
+		          		sessionStorage.setItem("orderStatus",5);
+		          		window.location.href="./userOrderList.html";
+		           	}
+		          },
+		          error: function (er) {          //失败，回调函数
+		              alert(er);
+		          }
+		      });
+	 }
+	 function confirmReceive(){//确认收货，更改订单状态为已完成
+		 if(confirm("是否确认收货?")){
+			 message={
+						"status":6,//订单状态  已完成
+			            "id":orderId
+				};
+				$.ajax({//订单状态查找订单
+			          url: "/freshSystem/order/updateStatus.action",        //后台url
+			          data:JSON.stringify(message),
+			          type: "POST",                   //类型，POST或者GET
+			          dataType: 'json',              //数据返回类型，可以是xml、json等
+			          contentType:'application/json;charset=UTF-8',
+			          success: function (data) {      //成功，回调函数
+			          	if(data.result==1){
+			          		window.location.href="./userOrderList.html";
+			           	}
+			          },
+			          error: function (er) {          //失败，回调函数
+			              alert(er);
+			          }
+			      });
+		 }
+	 }
+	 function updateAftersale(){//提交售后信息
+		 if(!confirm("确认提交售后信息?")){
+			 return;
+		 }
+ 		//获取需要售后的商品
+ 		var param = {};
+		var list =new Array();
+ 		$('#order tr:gt(0)').each(function(){
+ 			if($(this).find('td:eq(3) input[type="number"]').is(':visible')){
+ 				param={				//list格式
+ 						"id": $(this).find('td:eq(0) input[type="checkbox"]').val(),
+ 						"goods_id": $(this).find('td:eq(0) input[type="text"]').val(),
+ 						"order_id":orderId,
+ 						"goods_amount":$(this).find('td:eq(3) input[type="number"]').val(),
+ 						"goods_real_price":$(this).find('td:eq(4) input[type="text"]').val()
+ 				  };
+ 				list.push(param);
+ 			}
+ 		});
+ 		message ={
+				"itemList":list
+		};	
+ 		$.ajax({//给申请售后的商品的价格加负号
+            url: "/freshSystem/order_item/updateOrderItem.action",        //后台url
+            data:JSON.stringify(message),
+            type: "POST",                   //类型，POST或者GET
+            dataType: 'json',              //数据返回类型，可以是xml、json等
+            contentType:'application/json;charset=UTF-8',
+            success: function (data) {      //成功，回调函数
+            	 var reason = $('#reason').val();
+	       		 var handle_way = $('#handle_way').val();
+	       		 message={                          //数据
+       	                "after_sale": {
+       						"after_sale_id": "",
+       						"user_id":user.id,
+       						"a_order_id": orderId,
+       						"after_sale_reason": reason,
+       						"handle_status": 1,//提起申请
+       						"handle_way": handle_way,
+       						"handle_person": "",
+       						"handle_time": "",
+       						"prove_img": ""
+       					}
+       	             },
+       			 $.ajax({//添加售后
+       		             url: "/freshSystem/after_sale/addAfter_sale.action",        //后台url
+       		             data:JSON.stringify(message),
+       		             type: "POST",                   //类型，POST或者GET
+       		             dataType: 'json',              //数据返回类型，可以是xml、json等
+       		             contentType:'application/json;charset=UTF-8',
+       		             success: function (data) {      //成功，回调函数
+       		             	if(data.result==1){
+       		             		window.location.href="./userOrderList.html";
+       		             	}
+       		             },
+       		             error: function (er) {          //失败，回调函数
+       		                 alert(er);
+       		                 //previewer.preview();
+       		             }
+       		         });
+            },
+            error: function (er) {          //失败，回调函数
+                alert(er);
+                //previewer.preview();
+            }
+        });
+	}
+	function showMsg(type){//展示信息
+		if(type==1){//商品信息
+			$('#orderLog').hide();//日志信息不显示
+			$('#goodsDetail').show();//商品信息显示
+		 	if(orderStatus==2){//确认订单详情页面
+            	$('#confirm').show();
+            }
+			if(orderStatus==3){//待发货订单详情
+				$('#pendingDetail').show();
+			}
+            if(orderStatus==4){//待收货订单详情页面
+            	$('#confirmReceipt').show();
+            }
+		}else{
+			$('#goodsDetail').hide();
+			$('#orderLog').show();
+		}
+	}
+	function deleteGoods(obj){//删除一个购物项
+		if(!confirm("确认删除？")){
+				return;
+			}
+		
+		var tr1 = obj.parentNode.parentNode.rowIndex;  //得到当前所在行
+		obj = '#order tr:eq('+tr1+')'; 
+		var param={				//list格式
+					"id": $(obj).find('td:eq(0) input[type="checkbox"]').val(),
+					"order_id":orderId,//订单id
+					"orderRealPrice":orderPrice,//订单价格
+					"amount":parseInt($(obj).find('td:eq(3) div').html()),//商品数量
+					"goods_real_price":$(obj).find('td:eq(4) input[type="text"]').val()//商品价格
+			  };
+		$.ajax({
+	            url: "/freshSystem/order_item/deleteOrderItem.action",        //后台url
+	            data: JSON.stringify(param),
+	            type: "POST",                   //类型，POST或者GET
+	            dataType: 'json',              //数据返回类型，可以是xml、json等
+	            contentType:'application/json;charset=UTF-8',
+	            success: function (data) {      //成功，回调函数
+	                //alert(data.result);
+	            	sessionStorage.setItem("orderPrice",data.orderRealPrice);
+	                window.location.reload(); 
+	            },
+	            error: function (er) {          //失败，回调函数
+	                alert(er);
+	            }
+	        });
+	}
+	function editOrder(obj){//售后，将数量变为可编辑
+		var tr1 = obj.parentNode.parentNode.rowIndex;  //得到当前所在行
+		obj = '#order tr:eq('+tr1+')'; 
+		if($(obj).find('td:eq(4) input[type="text"]').val()<0){//
+			return;
+		}
+		if($(obj).find('td:eq(3) input[type="number"]').is(":hidden")){
+			$(obj).find('td:eq(3) div[class="goodsAmountText"]').hide();
+			//div spinner 需要隐藏，已经存在的不执行
+			if(!$(obj).find('td:eq(3) div[class="spinner"]').length>0){
+				$(obj).find('td:eq(3) input[type="number"]').spinner({min: getMin(obj), max: getMax(obj), value:getDefault(obj)});
+			}
+			$(obj).find('td:eq(3) div[class="spinner"]').show();
+			$(obj).find('td:eq(3) input[type="number"]').show();
+		}else{
+			$(obj).find('td:eq(3) div[class="goodsAmountText"]').show();
+			$(obj).find('td:eq(3) div[class="spinner"]').hide();
+		}
+		var showFlag=false;//售后信息是否显示 标志
+		$('#order tr:gt(0)').find('div[class="spinner"]').each(function(){
+			if(!$(this).is(":hidden")){
+				showFlag=true;
+			}
+		});
+		if(showFlag){
+			$('#afterSales').show();
+		}else{
+			$('#afterSales').hide();
+		}
+		
+	}
+	function getMax(obj)  
+	{  
+	  return $(obj).find('td:eq(3) input[type="number"]').attr('max');  
+	}  
+	function getMin(obj)  
+	{  
+	  return $(obj).find('td:eq(3) input[type="number"]').attr('min');   
+	}
+	function getDefault(obj){
+		return $(obj).find('td:eq(3) input[type="number"]').attr('value');
+	}
+</script>
+</head>
+<body>
+<form method="post" action="" id="listform">
+  <div class="panel admin-panel">
+	<table id="title" style="background-color:#20B2AA">
+  		<tr><td>
+  			<div class="title">
+		    	<ul >
+			    	<li style="float:left;padding:0.2em;"><a href="javascript:returnLastPage()" style="color:#FFFFFF;font-size:25px;">返回</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./index.html"  style="color:#FFFFFF;font-size:25px;">首页</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="#" style="color:#FFFFFF;font-size:25px;">订单详情</a></li>
+			    	<li style="float:left;padding:0.2em;"><a href="./myBasket.html" style="color:#FFFFFF;font-size:25px;">我的菜篮</a></li>
+		    	</ul>
+		    </div>
+  		</td>
+  		<tr style="visibility: hidden;"><td>111111111111111111111111111111111111111111111111111111111111</td></tr>
+  		<tr>
+  			<td>
+	  			<div>
+			    	<ul>
+				    	<li style="float:left;padding:0.2em;"><a href="javascript:showMsg(1)" style="color:#FFFFFF;font-size:25px;">商品信息</a></li>
+				    	<li style="float:left;padding:0.2em;"><a href="javascript:showMsg(2)" style="color:#FFFFFF;font-size:25px;">订单状态流转信息</a></li>
+			    	</ul>
+			    </div>
+  			</td>
+  		</tr>
+  	</table>
+  </div>
+</form>
+  <p/><p/>
+  <div id="goodsDetail"><h2>订单商品信息:</h2>
+    <table class="table table-hover text-center" id="order">
+      <tr>
+      	<th style='display:none;'></th>
+        <th>品名</th>
+        <th>单价</th>
+        <th>数量</th>
+        <th>报价</th>
+        <th>操作</th>
+      </tr>
+      <volist name="list" id="vo">
+    </table>
+  <div class="footer">
+	<a href="javaScript:findMoreOrderByStatus()">查看更多</a>
+  </div>
+  <div id="price"> 
+  	<strong>
+  		<b>交易状态：</b>
+  		<b id="orderStatus">待收货</b>
+  		<b>总计：</b>
+  		<b id="account">￥16.30元</b>
+  	</strong>
+  </div>
+
+ <div id="confirm" style="display:none;">
+ 	<input type="button" value="确认订单" onclick="confirmOrder()"/>
+ </div>
+ <div id="confirmReceipt" style="display:none;">
+ 	<input type="button" onclick="confirmReceive()" value="确认收货"/>
+  </div>
+  <div id="afterSales" style="display:none;">
+  	<div>
+  		<strong>
+  			<b>申请售后原因：</b>
+  		</strong>
+  		<input type="textarea" value="" id="reason"></input>
+  		</p>
+  		<strong>
+  			<b>售后处理方式：</b>
+  		</strong>
+  		<select id="handle_way">
+  			<option value="1">开红字发票</option>
+  			<option value="2">补发</option>
+  		</select>
+  		</p>
+  		<input type="button" onclick="updateAftersale()" value="提交"/>
+  		
+  	</div>
+  	<div id="dealWith">
+  	</div>
+  	<div id="afterSaleStatus">
+  	</div>
+  	<div id="upload" style="display:none;">
+		<input type="file" id="file" multiple onchange="preview()"/>
+		<input type="button" onclick="uploadImg()" value="上传"/>
+		<div id="container"></div>
+	</div>
+  </div>
+   <div id="pendingDetail" style="display:none;">
+   		<input type="button" value="取消订单" onclick="cancelOrder()"/>
+  	</div>
+</div>
+<p/><p/>
+<div id="orderLog">
+	<div><h2>订单状态流转信息:</h2></div>
+	<table class="table table-hover text-center" id="log">
+      <tr>
+      	<th>事件</th>
+        <th>时间</th>
+      </tr>
+    </table>
+</div>
+</body>
+</html>
