@@ -11,5 +11,6 @@ public interface UserDao {
 	public Integer updateMessage(User user);
 	public List<User> selectAllUser();
 	public User selectUserByUserId(String user_id);
-	public Integer updateUserId(String user_name,String openId);	
+	public Integer updateUserId(String user_name,String openId);
+	public Integer addOneUser(User user);
 }

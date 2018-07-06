@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSON;
 import com.htzhny.dao.BillDao;
 import com.htzhny.dao.OrderDao;
+import com.htzhny.dao.UserDao;
 import com.htzhny.entity.Bill;
 import com.htzhny.entity.Order;
 import com.htzhny.entity.User;
 import com.htzhny.service.BillService;
 import com.htzhny.service.OrderService;
 import com.htzhny.service.UserService;
+import com.htzhny.util.DateUtil;
 import com.htzhny.util.SessionUtil;
 
 import net.sf.json.JSONObject;
@@ -41,6 +43,7 @@ import net.sf.json.JSONObject;
 public class UserController {
 	Logger log = Logger.getLogger(UserController.class);
 	SessionUtil sessionUtil=SessionUtil.getInstance();
+	DateUtil dateUtil = DateUtil.getInstance();
 	@Autowired(required=true)
     private UserService userService;
 	
@@ -244,7 +247,8 @@ public class UserController {
    		result = "0";
    	}else {
    		//用户存在，将openid更新到数据库
-   		jsonObject.put("user", user);HttpSession session = sessionUtil.getSession(request);
+   		jsonObject.put("user", user);
+   		HttpSession session = sessionUtil.getSession(request);
 		if(session==null){
 			session = request.getSession();
 		}
@@ -254,6 +258,47 @@ public class UserController {
    		int updateResult = userService.updateUserId(phone, openId);
    		if(updateResult!=1){
    			result="0";
+   		}
+   	}
+	jsonObject.put("result", result);
+	return jsonObject;
+   }
+   /**
+    * 航天优选商城 用户登录接口：
+    * 	
+    * 	1、如果不存在，判断手机号是否存在，存在表示该手机号已注册
+    * 	2、手机号也不存在，新增用户，存入手机号与openid
+    * add by wyc 2018/06/25 
+    * @param params  openid 。phone
+    * @param request
+    * @return
+    */
+   @RequestMapping(value="wxLogin/login", method = RequestMethod.POST)
+   public @ResponseBody JSONObject wxLogingByPhone(@RequestBody Map<String,Object> params,HttpServletRequest request) {
+   	JSONObject jsonObject = new JSONObject();
+   	String openId=(String) params.get("openid");
+   	String phone=(String) params.get("phone");
+   	User user = userService.findUserByUserName(phone); 
+	String result="1";
+   	if(null!=user){//用户存在
+   		result = "0";
+   	}else {
+   		//用户不存在，新增用户并将openid存到数据库
+   		user = new User(phone,1,phone,dateUtil.getNow(),1,openId);
+   		
+   		HttpSession session = sessionUtil.getSession(request);
+		if(session==null){
+			session = request.getSession();
+		}
+		session.setAttribute("user", user);
+		String sessionId = session.getId();
+    	jsonObject.put("sessionId",sessionId);
+   		int addResult = userService.addOneUser(user);
+   		if(addResult!=1){
+   			result="0";
+   		}else{
+   			user = userService.findUserByUserName(phone);
+   			jsonObject.put("user", user);
    		}
    	}
 	jsonObject.put("result", result);

@@ -184,6 +184,16 @@ public class User {
 		this.user_img = user_img;
 		this.openId = openId;
 	}
+	
+	public User(String user_name, int user_type, String user_phone, String create_time, int status, String openId) {
+		super();
+		this.user_name = user_name;
+		this.user_type = user_type;
+		this.user_phone = user_phone;
+		this.create_time = create_time;
+		this.status = status;
+		this.openId = openId;
+	}
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", user_name=" + user_name + ", password=" + password + ", user_type=" + user_type

@@ -24,4 +24,8 @@
 <update id="updateUserId" >
 	update user set openId=#{1} where user_name=#{0}
 </update>
+<insert id="addOneUser" parameterType="com.htzhny.entity.User" >
+	insert into user(user_name,user_type,user_phone,create_time,status,openId)
+	values(#{user_name},#{user_type},#{user_phone},#{create_time},#{status},#{openId})
+</insert>
 </mapper>
