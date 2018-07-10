@@ -71,6 +71,11 @@ public class Order_itemServiceImpl implements Order_itemService{
 	public Integer updateAfterSale(Integer is_after_sale,String id) {
 		return order_itemDao.updateAfterSale(is_after_sale,id);
 	}
+	@Override
+	public Integer selectCountByGoodsId(Integer goods_id) {
+		// TODO Auto-generated method stub
+		return order_itemDao.selectCountByGoodsId(goods_id);
+	}
 
 
 

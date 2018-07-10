@@ -41,7 +41,7 @@
 		select * from goods limit #{0},#{1}
 	</select>
 	<select id="selectRecommendedGoods" parameterType="java.lang.Integer" resultMap="GoodsQuery">
-		select * from goods where goods_Recommended=1
+		select * from goods where goods_Recommended=1 and goods_status=1
 	</select>
 	<update id="updateGoodsRecommendedstatus" >
 		update goods set goods_Recommended=#{1} where id=#{0}
@@ -61,6 +61,5 @@
 	</select>
 	<select id="selectCountByGoodsName" resultType="java.lang.Integer" parameterType="String">
 		select count(1) from goods where goods_name like "%"#{0}"%"
-		
 	</select> 
 </mapper>

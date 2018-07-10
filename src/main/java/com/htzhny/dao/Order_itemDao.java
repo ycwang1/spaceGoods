@@ -14,4 +14,5 @@ public interface Order_itemDao {
 	public Integer deleteOrderItem(String id);
 	public Integer addCompleteOrderItem(Order_item item);
 	public Integer updateAfterSale(Integer is_after_sale,String id);
+	public Integer selectCountByGoodsId(Integer goods_id);
 }

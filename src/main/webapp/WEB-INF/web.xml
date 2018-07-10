@@ -7,6 +7,9 @@
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
   </listener>
+   <listener>
+    <listener-class>com.htzhny.web.InitListener</listener-class>
+  </listener>
   <listener>
     <listener-class>com.htzhny.session.SessionListener</listener-class>
   </listener>

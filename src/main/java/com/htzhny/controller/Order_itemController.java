@@ -156,6 +156,22 @@ public class Order_itemController {
 		jsonObject.put("result",result);
 		return jsonObject;
 	}
+	
+	/**
+	 * 查询当天已支付订单，指定商品id的数量
+	 * 用于团购数量的配置
+	 * @param params
+	 * @return
+	 */
+	@RequestMapping(value="selectCountByGoodsId")
+	public @ResponseBody JSONObject  selectCountByGoodsId(@RequestBody Map<String, Object> params){
+		Integer order_id= (Integer)params.get("id");
+		JSONObject jsonObject = new JSONObject();
+		Integer account = 0;
+		account = order_itemService.selectCountByGoodsId(order_id);//获取已参加团购数量
+    	jsonObject.put("account",account);
+		return jsonObject;
+	}
 }
 
 

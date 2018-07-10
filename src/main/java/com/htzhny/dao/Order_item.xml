@@ -39,4 +39,10 @@
 	<update id="updateAfterSale">
 		update order_item set is_after_sale=#{0} where id=#{1}
 	</update>
+	
+	<select id="selectCountByGoodsId" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+		select sum(goods_amount) from t_order o 
+		left join order_item oi on oi.order_id = o.id
+		where o.pay_status= 1 and to_days(o.create_time)>to_days(now()) and oi.goods_id=#{0}
+	</select> 
 </mapper>
