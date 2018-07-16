@@ -16,4 +16,5 @@ public interface Order_itemService {
 	public Integer addCompleteOrderItem(Order_item item);
 	public Integer updateAfterSale(Integer is_after_sale,String id);
 	public Integer selectCountByGoodsId(Integer goods_id);
+	public Integer updateAmountById(Integer amount,String orderId);
 }

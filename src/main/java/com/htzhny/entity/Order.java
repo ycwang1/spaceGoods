@@ -15,6 +15,8 @@ public class Order {
 	private double order_low_price;//订单所有商品总共的最低价
 	private double order_high_price;//订单所有商品总共的最高价
 	private double order_real_price;//供货商给出的实际价交钱
+	//航天优选商城订单状态
+	//0:失效 （取消订单）10:购物车状态（未支付）  11:清除购物车   12:拼团等待状态（未支付）  13:拼团等待状态（已支付）  3:待发货状态（已支付）  4:待收货   6 已完成
 	private int order_status;//0:失效 （取消订单）1:待报价 2：待确认 3：待发货 4：待收货 5：售后处理中 6：已完成  
 	private String create_time;//创建时间
 	private int user_id;//订单所属用户id
@@ -109,6 +111,33 @@ public class Order {
 		this.user_id = user_id;
 		this.pay_status = pay_status;
 		this.bill_status=bill_status;
+	}
+	
+	public Order(String address, String delivery_time, double order_low_price, double order_high_price,
+			double order_real_price, int order_status, String create_time, int user_id, int pay_status,
+			int bill_status) {
+		super();
+		this.address = address;
+		this.delivery_time = delivery_time;
+		this.order_low_price = order_low_price;
+		this.order_high_price = order_high_price;
+		this.order_real_price = order_real_price;
+		this.order_status = order_status;
+		this.create_time = create_time;
+		this.user_id = user_id;
+		this.pay_status = pay_status;
+		this.bill_status = bill_status;
+	}
+	
+	public Order(String id, double order_real_price, int order_status, String create_time, int user_id,
+			int pay_status) {
+		super();
+		this.id = id;
+		this.order_real_price = order_real_price;
+		this.order_status = order_status;
+		this.create_time = create_time;
+		this.user_id = user_id;
+		this.pay_status = pay_status;
 	}
 	public Order() {
 		super();

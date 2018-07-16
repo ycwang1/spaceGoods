@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.htzhny.entity.Order;
 import com.htzhny.entity.OrderQuery;
+import com.htzhny.entity.TaskJobResult;
 
 public interface OrderDao {
 	public List<OrderQuery> selectUserOrderByStatus( Integer start,Integer size,Integer status,Integer user_id);
@@ -29,4 +30,8 @@ public interface OrderDao {
 	
 	public List<OrderQuery> selectUserUnPayOrder(Integer start,Integer size,Integer user_id);
 	public Integer selectUserUnPayOrderCount(Integer user_id);
+	public Integer addCurtOrder(Order order);
+	public Order selectUserCurtOrder(Integer userId);
+	public Integer updateOrder(String delivery_time,String address,String id);
+	public List<TaskJobResult> selectOrder();
 }

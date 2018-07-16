@@ -16,6 +16,12 @@
 		<result column="bill_status" property="bill_status"/>
 
 	</resultMap>
+	<resultMap id="TaskJobResult" type="com.htzhny.entity.TaskJobResult">
+		<result column="account" property="account"/>
+		<result column="goodsId" property="goodsId"/>
+		<result column="initNumber" property="initNumber"/>
+		<result column="totalNumber" property="totalNumber"/>
+	</resultMap>
 	<select id="selectCountByStatus" parameterType="java.lang.Integer" resultType="java.lang.Integer">
 		select count(1) from t_order where order_status=#{status}
 	</select>
@@ -87,4 +93,22 @@
 	<select id="selectUserUnPayOrderCount" resultType="java.lang.Integer">
 		select count(1) from t_order join user on t_order.user_id=user.id where bill_status !=3 and order_status=6 and user_id=#{3}
 	</select>
+	<insert id="addCurtOrder" parameterType="com.htzhny.entity.Order" >
+		insert into t_order(id,order_status,create_time,order_real_price,user_id,pay_status) values(#{id},#{order_status},#{create_time},#{order_real_price},#{user_id},#{pay_status});
+	</insert>
+	<select id="selectUserCurtOrder" parameterType="java.lang.Integer" resultType="com.htzhny.entity.Order">
+		select * from t_order where user_id=#{user_id} and order_status=10
+	</select>
+	<update id="updateOrder">
+		update t_order set delivery_time=#{0} , address=#{1} , order_status=12 where id=#{2}
+	</update>
+	
+	<select id="selectOrder" resultMap="TaskJobResult">
+		select sum(ifnull(oi.goods_amount,0)) as account,oi.goods_id as goodsId,goods.goods_introduce as initNumber,goods.base_id as totalNumber from order_item oi 
+		left join t_order o on o.id=oi.order_id
+		left join goods on goods.id = oi.goods_id
+		where o.order_status=13
+		group by oi.goods_id;
+	</select>
+	
 </mapper>

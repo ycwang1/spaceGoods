@@ -28,7 +28,7 @@ public class DateUtil {
 		String formatDate = "";  
 		DateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //HH表示24小时制；  
 	    formatDate = dFormat.format(dt); 
-	    String create_time = DateFormat.getDateInstance().format(dt);  
-	    return create_time;	
+//	    String create_time = DateFormat.getDateInstance().format(dt);  
+	    return formatDate;	
   	}
 }

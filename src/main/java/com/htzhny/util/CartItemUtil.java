@@ -8,6 +8,22 @@ package com.htzhny.util;
 public class CartItemUtil {
 	private Integer goods_id;
 	private Integer amount;
+	private double price;//商品价格
+	private String id;
+	
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public double getPrice() {
+		return price;
+	}
+	public void setPrice(double price) {
+		this.price = price;
+	}
 	public Integer getGoods_id() {
 		return goods_id;
 	}
@@ -25,12 +41,27 @@ public class CartItemUtil {
 		this.goods_id = goods_id;
 		this.amount = amount;
 	}
-	@Override
-	public String toString() {
-		return "CartItemUtil [goods_id=" + goods_id + ", amount=" + amount + "]";
+	
+	public CartItemUtil(Integer goods_id, Integer amount, double price) {
+		super();
+		this.goods_id = goods_id;
+		this.amount = amount;
+		this.price = price;
+	}
+
+	public CartItemUtil(Integer amount, double price, String id) {
+		super();
+		this.amount = amount;
+		this.price = price;
+		this.id = id;
 	}
 	public CartItemUtil() {
 		super();
 	}
+	@Override
+	public String toString() {
+		return "CartItemUtil [goods_id=" + goods_id + ", amount=" + amount + ", price=" + price + "]";
+	}
+	
 	
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import com.htzhny.entity.Order;
 import com.htzhny.entity.OrderQuery;
 import com.htzhny.entity.PageBean;
+import com.htzhny.entity.TaskJobResult;
 
 public interface OrderService{
 	public PageBean<OrderQuery> selectUserOrderByStatus(Integer currentPage,Integer status,Integer user_id);
@@ -26,5 +27,8 @@ public interface OrderService{
 	
 	public Integer selectUserUnPayOrderCount(Integer user_id);
 	public PageBean<OrderQuery> selectUserUnPayOrder(Integer currentPage, Integer user_id);
-	
+	public Integer addCurtOrder(Order order);
+	public Order selectUserCurtOrder(Integer userId);
+	public Integer updateOrder(String delivery_time,String address,String id);
+	public List<TaskJobResult> selectOrder();
 }

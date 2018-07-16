@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
@@ -410,4 +412,45 @@ public class HttpUtil {
 
 
     }
+    
+    public static String postData(String urlStr, String data){  
+        return postData(urlStr, data, null);  
+    }  
+
+    public static String postData(String urlStr, String data, String contentType){  
+        BufferedReader reader = null;  
+        try {  
+            URL url = new URL(urlStr);  
+            URLConnection conn = url.openConnection();  
+            conn.setDoOutput(true);  
+            conn.setConnectTimeout(TIMEOUT);  
+            conn.setReadTimeout(TIMEOUT);  
+            if(contentType != null)  
+                conn.setRequestProperty("content-type", contentType);  
+            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), ENCODING);  
+            if(data == null)  
+                data = "";  
+            writer.write(data);   
+            writer.flush();  
+            writer.close();    
+
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), ENCODING));  
+            StringBuilder sb = new StringBuilder();  
+            String line = null;  
+            while ((line = reader.readLine()) != null) {  
+                sb.append(line);  
+                sb.append("\r\n");  
+            }  
+            return sb.toString();  
+        } catch (IOException e) {  
+            //logger.error("Error connecting to " + urlStr + ": " + e.getMessage());  
+        } finally {  
+            try {  
+                if (reader != null)  
+                    reader.close();  
+            } catch (IOException e) {  
+            }  
+        }  
+        return null;  
+    } 
 }

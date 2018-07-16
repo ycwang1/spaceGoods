@@ -41,8 +41,11 @@
 	</update>
 	
 	<select id="selectCountByGoodsId" resultType="java.lang.Integer" parameterType="java.lang.Integer">
-		select sum(goods_amount) from t_order o 
+		select IFNULL(sum(oi.goods_amount),0) from t_order o 
 		left join order_item oi on oi.order_id = o.id
-		where o.pay_status= 1 and to_days(o.create_time)>to_days(now()) and oi.goods_id=#{0}
+		where o.order_status=13 and oi.goods_id=#{0}
 	</select> 
+	<update id="updateAmountById">
+		update order_item set goods_amount=#{0} where id=#{1}
+	</update>
 </mapper>

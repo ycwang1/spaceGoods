@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSON;
+import com.htzhny.entity.Goods;
 import com.htzhny.entity.Order;
 import com.htzhny.entity.OrderLog;
 import com.htzhny.entity.Order_item;
 import com.htzhny.entity.Order_itemQuery;
 import com.htzhny.entity.PageBean;
 import com.htzhny.service.BillService;
+import com.htzhny.service.GoodsService;
 import com.htzhny.service.OrderService;
 import com.htzhny.service.Order_itemService;
 import com.htzhny.service.Order_logService;
@@ -37,7 +39,8 @@ public class Order_itemController {
 	private OrderService orderService;
 	@Autowired
 	private Order_logService logService;
-	
+	@Autowired
+	private GoodsService goodsService;
 	@RequestMapping(value="addOrder_item")
 	//生成订单项
 	public @ResponseBody JSONObject addOrder_item(@RequestBody Map<String, Object> params){
@@ -158,18 +161,19 @@ public class Order_itemController {
 	}
 	
 	/**
-	 * 查询当天已支付订单，指定商品id的数量
-	 * 用于团购数量的配置
+	 * 查询拼团待等待，指定商品id的数量
 	 * @param params
 	 * @return
 	 */
 	@RequestMapping(value="selectCountByGoodsId")
 	public @ResponseBody JSONObject  selectCountByGoodsId(@RequestBody Map<String, Object> params){
-		Integer order_id= (Integer)params.get("id");
+		Integer goodsId= (Integer)params.get("goodsId");
 		JSONObject jsonObject = new JSONObject();
 		Integer account = 0;
-		account = order_itemService.selectCountByGoodsId(order_id);//获取已参加团购数量
-    	jsonObject.put("account",account);
+		account = order_itemService.selectCountByGoodsId(goodsId);//获取已参加团购数量
+		Goods goods=goodsService.selectGoodsById(goodsId);
+		goods.setGoods_introduce(Integer.parseInt(goods.getGoods_introduce())+account+"");
+    	jsonObject.put("goods", goods);
 		return jsonObject;
 	}
 }

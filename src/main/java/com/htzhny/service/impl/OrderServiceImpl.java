@@ -19,6 +19,7 @@ import com.htzhny.entity.Order;
 import com.htzhny.entity.OrderLog;
 import com.htzhny.entity.OrderQuery;
 import com.htzhny.entity.PageBean;
+import com.htzhny.entity.TaskJobResult;
 import com.htzhny.service.OrderService;
 
 
@@ -271,14 +272,27 @@ public class OrderServiceImpl implements OrderService{
 		return pageBean;
 	}
 
+	@Override
+	public Integer addCurtOrder(Order order) {
+		// TODO Auto-generated method stub
+		return orderDao.addCurtOrder(order);
+	}
 
+	@Override
+	public Order selectUserCurtOrder(Integer userId) {
+		// TODO Auto-generated method stub
+		return orderDao.selectUserCurtOrder(userId);
+	}
 
+	@Override
+	public Integer updateOrder(String delivery_time, String address, String id) {
+		// TODO Auto-generated method stub
+		return orderDao.updateOrder(delivery_time, address, id);
+	}
 
-
-
-	
-		
-	
-
-
+	@Override
+	public List<TaskJobResult> selectOrder() {
+		// TODO Auto-generated method stub
+		return orderDao.selectOrder();
+	}
 }

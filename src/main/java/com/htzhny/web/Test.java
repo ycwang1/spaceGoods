@@ -5,11 +5,15 @@ import java.util.Calendar;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.htzhny.util.DateUtil;
+
 public class Test {
 
 	public static void main(String[] args) {
 //		ApplicationContext context=new ClassPathXmlApplicationContext("beans.xml"); 
-		ApplicationContext context=new ClassPathXmlApplicationContext("spring-mvc.xml"); 
+		DateUtil dateUtil = DateUtil.getInstance();
+		System.out.println(dateUtil.getNow());
+//		ApplicationContext context=new ClassPathXmlApplicationContext("spring-mvc.xml"); 
 //		getOrderId();
 	}
 	//生成订单id（流水号） by wyc

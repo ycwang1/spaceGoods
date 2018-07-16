@@ -76,6 +76,11 @@ public class Order_itemServiceImpl implements Order_itemService{
 		// TODO Auto-generated method stub
 		return order_itemDao.selectCountByGoodsId(goods_id);
 	}
+	@Override
+	public Integer updateAmountById(Integer amount, String orderId) {
+		// TODO Auto-generated method stub
+		return order_itemDao.updateAmountById(amount, orderId);
+	}
 
 
 
