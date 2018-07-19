@@ -119,6 +119,9 @@ public class GoodsController {
 		JSONObject jsonObject = new JSONObject();
 		
 		List<Goods> list=goodsService.selectRecommendedGoods();
+//		for(Goods goods:list){
+//			goods.setGoods_img(JSON.toJSONString(goods.getGoods_img()));
+//		}
 		String list1=JSON.toJSONString(list);
     	jsonObject.put("list1",list1);
 		return jsonObject;

@@ -34,4 +34,5 @@ public interface OrderDao {
 	public Order selectUserCurtOrder(Integer userId);
 	public Integer updateOrder(String delivery_time,String address,String id);
 	public List<TaskJobResult> selectOrder();
+	public Integer updateOrderStatusByGoodsId(Integer goodsId);
 }

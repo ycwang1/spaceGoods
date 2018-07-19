@@ -295,4 +295,10 @@ public class OrderServiceImpl implements OrderService{
 		// TODO Auto-generated method stub
 		return orderDao.selectOrder();
 	}
+
+	@Override
+	public Integer updateOrderStatusByGoodsId(Integer goodsId) {
+		// TODO Auto-generated method stub
+		return orderDao.updateOrderStatusByGoodsId(goodsId);
+	}
 }

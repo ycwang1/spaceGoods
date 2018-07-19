@@ -1,7 +1,9 @@
 package com.htzhny.controller;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +18,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSON;
+import com.htzhny.dao.InitParamDao;
 import com.htzhny.entity.Goods;
+import com.htzhny.entity.InitParam;
 import com.htzhny.entity.Order;
 import com.htzhny.entity.OrderLog;
 import com.htzhny.entity.Order_item;
@@ -27,6 +31,7 @@ import com.htzhny.service.GoodsService;
 import com.htzhny.service.OrderService;
 import com.htzhny.service.Order_itemService;
 import com.htzhny.service.Order_logService;
+import com.htzhny.util.DateUtil;
 
 import net.sf.json.JSONObject;
 
@@ -41,7 +46,9 @@ public class Order_itemController {
 	private Order_logService logService;
 	@Autowired
 	private GoodsService goodsService;
-	@RequestMapping(value="addOrder_item")
+	DateUtil dateUtil = DateUtil.getInstance();
+	@Autowired
+	private InitParamDao initParamDao;
 	//生成订单项
 	public @ResponseBody JSONObject addOrder_item(@RequestBody Map<String, Object> params){
 		
@@ -172,8 +179,25 @@ public class Order_itemController {
 		Integer account = 0;
 		account = order_itemService.selectCountByGoodsId(goodsId);//获取已参加团购数量
 		Goods goods=goodsService.selectGoodsById(goodsId);
+		List<InitParam> initList = initParamDao.selectParam(1);//获取小程序参数
+		Map<String,String> map = new HashMap<String,String>();
+		if(initList.size()>0){
+			for(InitParam param:initList){
+				map.put(param.getName(), param.getValue());
+			}
+		}
+		try {
+			//团购倒计时 秒数
+			jsonObject.put("seconds", dateUtil.getMills(map.get("startDate")));
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		goods.setGoods_introduce(Integer.parseInt(goods.getGoods_introduce())+account+"");
-    	jsonObject.put("goods", goods);
+		List<Goods> list = new ArrayList<Goods>();
+		list.add(goods);
+		jsonObject.put("list", JSON.toJSONString(list));
+    	jsonObject.put("goods", JSON.toJSONString(goods));
 		return jsonObject;
 	}
 }

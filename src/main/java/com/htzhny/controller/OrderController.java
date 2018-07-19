@@ -191,6 +191,18 @@ public class OrderController {
 		Integer status= (Integer)params.get("status");
 		String id= (String)params.get("id");
 		Integer result=orderService.updateStatus(status, id);
+		if(status==13){//如果是支付成功订单 判断 数据库中13订单 是否达到团购达标数量
+			List<TaskJobResult> list = orderDao.selectOrder();//查找达到达标数量的商品
+			int account = 0;
+			for(TaskJobResult item:list){
+				account = item.getAccount()+item.getInitNumber();
+				//当参团数 达标，将包含改goodsId 的订单状态改为待收货
+				if(account>=item.getTotalNumber()){
+					orderDao.updateOrderStatusByGoodsId(item.getGoodsId());
+//					orderDao.updateOrderStatusByGoodsId(43);  测试
+				}
+			}
+		}
 		jsonObject.put("result", result);
 		return jsonObject;
 	}

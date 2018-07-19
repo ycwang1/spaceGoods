@@ -201,9 +201,11 @@ public class UserController {
     	
    }
    /**
-    * 微信登录验证，通过openid 查找数据库中是否存在，通过手机号查找数据是否存在 
-    * add by wyc 2018/06/25 
-    * @param params  openid 。phone
+    * 微信登录验证，
+	* 根据用户openid 判断用户是否存在
+    * 存在  获取userId，否则新增用户	存入openid
+    * add by wyc 2018/07/18 
+    * @param params  openid 
     * @param request
     * @return
     */
@@ -214,18 +216,26 @@ public class UserController {
    	//String phone=(String) params.get("phone");
    	User user = userService.selectUserByUserId(user_id); 
 	String result="1";
-   	if(user==null){//用户不存在
-   		result = "0";
-   	}else {
-   		HttpSession session = sessionUtil.getSession(request);
-		if(session==null){
-			session = request.getSession();
-		}
-		session.setAttribute("user", user);
-		String sessionId = session.getId();
-    	jsonObject.put("sessionId",sessionId);
-   		jsonObject.put("user", user);
+   	if(user==null){//用户不存在  创建用户  返回userid
+   	//用户不存在，新增用户并将openid存到数据库
+   		String phone ="";//默认手机号为空
+   		User newUser = new User(phone,1,phone,dateUtil.getNow(),1,user_id);
+   		
+   		int addResult = userService.addOneUser(newUser);
+   		if(addResult!=1){
+   			result="0";
+   		}else{
+   			user = userService.selectUserByUserId(user_id);
+   		}
    	}
+	HttpSession session = sessionUtil.getSession(request);
+	if(session==null){
+		session = request.getSession();
+	}
+	session.setAttribute("user", user);
+	String sessionId = session.getId();
+	jsonObject.put("sessionId",sessionId);
+	jsonObject.put("user", user);
 	jsonObject.put("result", result);
 	return jsonObject;
    }

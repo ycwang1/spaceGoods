@@ -194,6 +194,14 @@ public class User {
 		this.status = status;
 		this.openId = openId;
 	}
+	
+	public User(int user_type, String create_time, int status, String openId) {
+		super();
+		this.user_type = user_type;
+		this.create_time = create_time;
+		this.status = status;
+		this.openId = openId;
+	}
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", user_name=" + user_name + ", password=" + password + ", user_type=" + user_type

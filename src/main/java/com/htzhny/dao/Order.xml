@@ -110,5 +110,12 @@
 		where o.order_status=13
 		group by oi.goods_id;
 	</select>
-	
+	<update id="updateOrderStatusByGoodsId" parameterType="java.lang.Integer">
+		update t_order set order_status=3 where id in 
+		(select a.orderId from
+			(select oi.order_id as orderId from order_item oi 
+			left join t_order o on o.id = oi.order_id	
+			where oi.goods_id = #{0}  and o.order_status=13)a
+		) 
+	</update>
 </mapper>

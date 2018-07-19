@@ -2,6 +2,7 @@ package com.htzhny.controller;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.htzhny.entity.Address;
 import com.htzhny.entity.BuyCart;
@@ -261,6 +263,7 @@ public class BuyCartController {
 				newOrder.setPay_status(0);
 				newOrder.setOrder_status(10);
 				Integer result = orderService.addCurtOrder(newOrder);//新增结果
+				jsonObject.put("orderPrice", goodsAmount*goodsPrice);
 				if(result==1){
 					orderId = newOrder.getId();
 				}else{
@@ -280,6 +283,7 @@ public class BuyCartController {
 				}			
 				//更新订单价格
 				orderService.updateRealPrice(order.getOrder_real_price()+goodsAmount*goodsPrice, order.getId());
+				jsonObject.put("orderPrice", order.getOrder_real_price()+goodsAmount*goodsPrice);
 			}
 			if(!exist){//新增订单项
 				Order_item item = new Order_item();
@@ -291,6 +295,7 @@ public class BuyCartController {
 				item.setOrder_id(orderId);
 				order_itemService.addCompleteOrderItem(item);
 			}
+			jsonObject.put("orderId", orderId);
 			return jsonObject;
 		}
 		
@@ -304,7 +309,7 @@ public class BuyCartController {
 		 * @return   list<Order_Item>,orderId,result=0
 		 */
 		@RequestMapping(value="selectCurtGoods")
-		public @ResponseBody JSONObject selectCurtGoods(@RequestBody Map<String, Object> params,HttpServletRequest request){
+		public @ResponseBody JSONObject selectCurtGoods(@RequestBody Map<String, Object> params){
 			JSONObject jsonObject = new JSONObject();
 			Integer userId = (Integer)params.get("userId");
 			Order order = orderService.selectUserCurtOrder(userId);
@@ -313,7 +318,7 @@ public class BuyCartController {
 			}else{
 				String orderId  = order.getId();
 				PageBean<Order_itemQuery> pageBean = order_itemService.selectAllByOrderId(1,orderId);
-				List list = pageBean.getLists();
+				List<Order_itemQuery> list = pageBean.getLists();
 				jsonObject.put("list", list);
 				jsonObject.put("result", '1');
 			}
@@ -331,19 +336,26 @@ public class BuyCartController {
 			JSONObject jsonObject = new JSONObject();
 			String orderId = (String)params.get("orderId");
 			Integer user_id = (Integer)params.get("userId");
-			List<CartItemUtil> list1=(List<CartItemUtil>)params.get("list");
-			double orderPrice = 0.0;
-			for(int i=0;i<list1.size();i++){
-				CartItemUtil cartItem=JSON.parseObject(JSON.toJSONString(list1.get(i)),CartItemUtil.class);
-				orderPrice+=cartItem.getAmount()*cartItem.getPrice();
-				order_itemService.updateAmountById(cartItem.getAmount(), cartItem.getId());
+			List list = (List)params.get("list");
+			
+			if(!list.isEmpty()){
+				List<CartItemUtil> list1=(List<CartItemUtil>)params.get("list");
+				double orderPrice = 0.0;
+				for(int i=0;i<list1.size();i++){
+					CartItemUtil cartItem=JSON.parseObject(JSON.toJSONString(list1.get(i)),CartItemUtil.class);
+					orderPrice+=cartItem.getAmount()*cartItem.getPrice();
+					order_itemService.updateAmountById(cartItem.getAmount(), cartItem.getId());
+				}
+				Integer result = orderService.updateRealPrice(orderPrice, orderId);//更新订单价格
+				jsonObject.put("result", result);
+				jsonObject.put("orderId", orderId);
+				
+				jsonObject.put("orderPrice", orderPrice);
 			}
-			Integer result = orderService.updateRealPrice(orderPrice, orderId);//更新订单价格
-			jsonObject.put("result", result);
-			jsonObject.put("orderId", orderId);
-			List<Address> list=addressService.findAddressByUserId(user_id);
-			jsonObject.put("Address",list);
-			jsonObject.put("orderPrice", orderPrice);
+			List<Address> addressList=addressService.findAddressByUserId(user_id);
+			jsonObject.put("orderId",orderId);
+			jsonObject.put("Address",addressList);
+			jsonObject.put("orderPrice", "");
 			return jsonObject;
 		}
 }
